@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">MySharedBooking</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="insert_user">Insert User</string>
+    <string name="show_all_users">Show all users</string>
+    <string name="users">Users</string>
+    <string name="new_booking">New Booking</string>
+    <string name="book">Book</string>
+    <string name="type">Type</string>
+    <string name="set_date">Set Date</string>
+    <string name="list_booking">List Booking</string>
+</resources>

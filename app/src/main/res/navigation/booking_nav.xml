@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/booking_nav"
+    app:startDestination="@id/homeFrag">
+
+    <fragment
+        android:id="@+id/homeFrag"
+        android:name="com.example.mysharedbooking.HomeFrag"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFrag_to_userListFragment"
+            app:destination="@id/userListFragment" />
+        <action
+            android:id="@+id/action_homeFrag_to_newBookingForm"
+            app:destination="@id/newBookingForm" />
+        <action
+            android:id="@+id/action_homeFrag_to_bookingListFragment"
+            app:destination="@id/bookingListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userListFragment"
+        android:name="com.example.mysharedbooking.dataadaptersfragments.UserListFragment"
+        android:label="fragment_user_list"
+        tools:layout="@layout/fragment_user_list" />
+    <fragment
+        android:id="@+id/newBookingForm"
+        android:name="com.example.mysharedbooking.NewBookingForm"
+        android:label="fragment_new_booking_form"
+        tools:layout="@layout/fragment_new_booking_form" />
+    <fragment
+        android:id="@+id/bookingListFragment"
+        android:name="com.example.mysharedbooking.dataadaptersfragments.BookingListFragment"
+        android:label="fragment_booking_list"
+        tools:layout="@layout/fragment_booking_list" />
+</navigation>

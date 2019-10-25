@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="viewmodel"
+            type="com.example.mysharedbooking.viewmodels.NewBookingViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".NewBookingForm">
+
+
+        <TextView
+            android:id="@+id/top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:textSize="25sp"
+            android:layout_below="@id/top"
+            android:text="@string/type"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/top"
+            android:text="@={viewmodel.type}"/>
+
+        <Button
+            android:id="@+id/dateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/top"
+            android:onClick="@{viewmodel.ShowPick}"
+            android:text="@string/set_date" />
+
+        <TextView
+            android:id="@+id/booking_date"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textSize="24sp"
+            android:layout_below="@id/top"
+            app:text="@{viewmodel.date}"
+            android:layout_toEndOf="@id/dateButton" />
+
+        <EditText
+            android:id="@+id/user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/booking_date"
+            android:inputType="numberDecimal"
+            android:text="@={viewmodel.longToString(viewmodel.userId)}" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true"
+            android:onClick="@{viewmodel.insertNewBooking}"
+            android:text="@string/book"/>
+    </RelativeLayout>
+</layout>
