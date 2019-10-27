@@ -5,6 +5,7 @@ import android.content.Context
 import android.widget.Toast
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.User
+import com.example.mysharedbooking.models.UserBooking
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
@@ -137,6 +138,51 @@ class RESTOperations {
                 connection?.disconnect()
             }
             return userList
+        }
+
+        @JvmStatic
+        fun getUsersBooking(): UserBooking {
+            var response = 0
+            val url = URL("http://192.168.1.8:44300/api/UsersBooking/")
+            val moshi = Moshi.Builder().build()
+            lateinit var usersBooking: UserBooking
+            val adapter: JsonAdapter<UserBooking> = moshi.adapter(UserBooking::class.java)//adapter(User::class.java)
+            var connection: HttpURLConnection? = null
+            try {
+                connection = (url.openConnection() as? HttpURLConnection)
+                connection?.run {
+                    readTimeout = 3000
+                    connectTimeout = 3000
+                    requestMethod = "GET"
+                    doInput = true
+                    // Open communications link (network traffic occurs here).
+                    connect()
+                    //publishProgress(CONNECT_SUCCESS)
+                    response = responseCode
+                    // Retrieve the response body as an InputStream.
+                    //publishProgress(GET_INPUT_STREAM_SUCCESS, 0)
+                    inputStream?.let { stream ->
+                        val byteArr: ByteArray = ByteArray(1000)
+                        val byteBuffer = ByteBuffer.wrap(byteArr)
+                        //val stringBuilder = StringBuilder()
+                        val read = 0
+                        /*while( stream.buffered().read(byteArr) > 0 ){
+                            stringBuilder.append(String(byteArr))
+                        }*/
+                        //stringBuilder.append(stream.readBytes())
+                        val str = String(stream.readBytes())
+                        println(str)
+                        usersBooking = adapter.fromJson(str)!!
+                        //println(adapter.fromJson(stringBuilder.toString()).toString())
+
+                    }
+                }
+            } finally {
+                // Close Stream and disconnect HTTP connection.
+                //connection?.inputStream?.close()
+                connection?.disconnect()
+            }
+            return usersBooking
         }
     }
 }
