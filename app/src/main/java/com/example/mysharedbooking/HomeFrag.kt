@@ -70,7 +70,6 @@ class HomeFrag : Fragment() {
 
         // Create the observer which updates the UI.
         val insertNewUser = Observer<String> { newName ->
-            print("PORCODIOIOIIOI")
             mainViewModel.viewModelScope.launch { newUser(newName) }
         }
 
@@ -103,6 +102,10 @@ class HomeFrag : Fragment() {
             println(user.username+"")
         }
     }
+
+
+
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

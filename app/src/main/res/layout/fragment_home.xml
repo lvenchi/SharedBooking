@@ -42,6 +42,14 @@
         android:onClick="@{viewmodel.showall}"
         android:text="@string/show_all_users" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="190sp"
+
+        android:onClick="@{viewmodel.callApi}"
+        android:text="Call Api" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/newBook"
         android:layout_width="wrap_content"

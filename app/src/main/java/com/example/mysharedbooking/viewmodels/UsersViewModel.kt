@@ -4,6 +4,7 @@ package com.example.mysharedbooking.viewmodels
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.mysharedbooking.MainActivity
+import com.example.mysharedbooking.RESTOperations
 import com.example.mysharedbooking.models.MySharedBookingDB
 import com.example.mysharedbooking.models.User
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +26,8 @@ class UsersViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadUsers() {
         viewModelScope.launch(Dispatchers.Main) { userList.value =
             withContext(Dispatchers.IO) {
-                myDatabase.myDao().getAllUsers()
+                //myDatabase.myDao().getAllUsers()
+                RESTOperations.Operations.getUsers()
             }
         }
     }

@@ -70,6 +70,7 @@ class BookingListFragment : Fragment() {
                 )
         }
         bookingsViewModel.bookingList.observe(this, downloadBooking)
+
         bookingRecyclerView = activity?.findViewById<RecyclerView>(R.id.booking_recycler_view)?.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
