@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_homeFrag_to_bookingListFragment"
             app:destination="@id/bookingListFragment" />
+        <action
+            android:id="@+id/action_homeFrag_to_bookExistingBookingFragment"
+            app:destination="@id/bookExistingBookingFragment" />
     </fragment>
     <fragment
         android:id="@+id/userListFragment"
@@ -35,4 +38,9 @@
         android:name="com.example.mysharedbooking.dataadaptersfragments.BookingListFragment"
         android:label="fragment_booking_list"
         tools:layout="@layout/fragment_booking_list" />
+    <fragment
+        android:id="@+id/bookExistingBookingFragment"
+        android:name="com.example.mysharedbooking.BookExistingBookingFragment"
+        android:label="fragment_book_existing_booking"
+        tools:layout="@layout/fragment_book_existing_booking" />
 </navigation>

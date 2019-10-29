@@ -12,6 +12,7 @@ import androidx.databinding.BindingAdapter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mysharedbooking.MainActivity
+import com.example.mysharedbooking.RESTOperations
 import com.example.mysharedbooking.models.MySharedBookingDB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,8 +35,9 @@ class NewBookingViewModel(application: Application) : AndroidViewModel(applicati
 
     fun insertNewBooking( view: View){
         viewModelScope.launch (Dispatchers.IO) {
-                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false,userId.value!!)
-                database.myDao().insertBooking(booking)
+                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false, userId.value!!)
+            RESTOperations.Operations.registerBooking(booking)
+            //database.myDao().insertBooking(booking)
                 newBooking.postValue(booking)
         }
     }

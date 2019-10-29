@@ -1,14 +1,22 @@
 package com.example.mysharedbooking.models
 
-import androidx.room.Embedded
-import androidx.room.Relation
-import com.example.mysharedbooking.models.Booking
-import com.example.mysharedbooking.dataadaptersfragments.BookingListFragment
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import com.squareup.moshi.Json
 
-class UserBooking {
-    @Embedded
-    lateinit var user : User
-    //@Relation(parentColumn = "uid", entityColumn = "userid")
-    @Relation(parentColumn = "uid", entityColumn = "userid" , entity = Booking::class)
-    lateinit var bookingList :List<Booking>
-}
+
+@Entity(tableName = "userclient_booking_join",
+    primaryKeys = arrayOf("uid","id"),
+    foreignKeys = arrayOf(
+        ForeignKey(entity = User::class,
+            parentColumns = arrayOf("uid"),
+            childColumns = arrayOf("id")),
+        ForeignKey(entity = Booking::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("uid"))
+    )
+)
+data class UserBooking (
+    @Json(name = "UserId") val uid: Long,
+    @Json(name = "BookingId") val id: Long
+)

@@ -12,11 +12,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".dataadaptersfragments.BookingListFragment">
+        <EditText
+            android:layout_width="100sp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="@={viewmodel.userId}"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GetBookings"
+            android:layout_marginStart="120sp"
+            android:onClick="@{viewmodel.getBookingsByUserId}"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/booking_recycler_view" />
+            android:id="@+id/booking_recycler_view"
+            android:layout_marginTop="50sp"/>
 
     </FrameLayout>
 </layout>

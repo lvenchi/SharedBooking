@@ -20,7 +20,8 @@ import kotlinx.android.synthetic.main.main_layout.*
 
 class MainActivity : AppCompatActivity(),
     HomeFrag.OnFragmentInteractionListener, UserListFragment.OnFragmentInteractionListener,
-    NewBookingForm.OnFragmentInteractionListener, BookingListFragment.OnFragmentInteractionListener{
+    NewBookingForm.OnFragmentInteractionListener, BookingListFragment.OnFragmentInteractionListener,
+    BookExistingBookingFragment.OnFragmentInteractionListener{
 
     override fun onFragmentInteraction(uri: Uri) {
 
@@ -83,6 +84,10 @@ class MainActivity : AppCompatActivity(),
                 }
                 getString(R.string.list_booking) -> {
                     val action = HomeFragDirections.actionHomeFragToBookingListFragment()
+                    navController.navigate(action)
+                }
+                getString(R.string.manage_links) -> {
+                    val action = HomeFragDirections.actionHomeFragToBookExistingBookingFragment()
                     navController.navigate(action)
                 }
             }
