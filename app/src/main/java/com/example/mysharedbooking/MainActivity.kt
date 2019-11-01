@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.navigation.Navigation
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.navigateUp
@@ -21,7 +22,7 @@ import kotlinx.android.synthetic.main.main_layout.*
 class MainActivity : AppCompatActivity(),
     HomeFrag.OnFragmentInteractionListener, UserListFragment.OnFragmentInteractionListener,
     NewBookingForm.OnFragmentInteractionListener, BookingListFragment.OnFragmentInteractionListener,
-    BookExistingBookingFragment.OnFragmentInteractionListener{
+    BookExistingBookingFragment.OnFragmentInteractionListener, LoginFragment.OnFragmentInteractionListener{
 
     override fun onFragmentInteraction(uri: Uri) {
 
@@ -95,9 +96,5 @@ class MainActivity : AppCompatActivity(),
             drawerLayout.closeDrawers()
             true
         }
-
-        // Tie nav graph to items in nav drawer
-        //setupWithNavController(navigationView, navController)
-
     }
 }

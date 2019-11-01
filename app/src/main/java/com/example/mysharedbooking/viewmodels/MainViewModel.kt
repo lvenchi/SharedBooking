@@ -1,5 +1,6 @@
 package com.example.mysharedbooking.viewmodels
 
+import android.app.Application
 import android.util.JsonReader
 import android.view.View
 import android.widget.Toast
@@ -19,6 +20,13 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import androidx.core.app.ActivityCompat.startActivityForResult
+import android.content.Intent
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import androidx.lifecycle.AndroidViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 
 class MainViewModel : ViewModel(){
@@ -29,6 +37,12 @@ class MainViewModel : ViewModel(){
     val showAllUsers: MutableLiveData<Boolean?> = MutableLiveData()
     val addNewBook: MutableLiveData<Boolean?> = MutableLiveData(false)
     val webResponses: MutableLiveData<String> = MutableLiveData("")
+    val login: MutableLiveData<Boolean> = MutableLiveData()
+    val logged: MutableLiveData<Boolean> = MutableLiveData(false)
+
+    fun loginWithGoogle(view: View){
+        login.value = true
+    }
 
     fun clicked( view: View ){
         insertUser.value = newUser.value
