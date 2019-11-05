@@ -6,4 +6,7 @@
         <item android:title="@string/list_booking" android:id="@+id/list_booking" android:icon="@mipmap/ic_launcher"/>
         <item android:title="@string/manage_links" android:id="@+id/manage_links" android:icon="@mipmap/ic_launcher_round"/>
     </group>
+    <group android:checkableBehavior="single">
+        <item android:title="@string/logout" android:id="@+id/logout" android:icon="@color/colorAccent"/>
+    </group>
 </menu>

@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/top"
-            android:onClick="@{viewmodel.ShowPick}"
+            android:onClick="@{viewmodel::ShowPick}"
             android:text="@string/set_date" />
 
         <TextView

@@ -30,7 +30,7 @@ class RESTOperations {
                     requestMethod = "POST"
                     doInput = true
                     setRequestProperty("Content-Type","application/json")
-                    outputStream.write( adapter.toJson(User(0, newUser,"franco", newUser, "ruolone" )).toByteArray(Charsets.UTF_8) )
+                    outputStream.write( adapter.toJson(User(0, newUser,"franco", newUser,"", "ruolone", "" , "")).toByteArray(Charsets.UTF_8) )
                     connection.outputStream?.close()
                     // Open communications link (network traffic occurs here).
                     connect()

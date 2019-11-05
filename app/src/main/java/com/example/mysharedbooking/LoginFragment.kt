@@ -8,23 +8,31 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
-import com.example.mysharedbooking.databinding.FragmentHomeBinding
 import com.example.mysharedbooking.databinding.FragmentLoginBinding
 import com.example.mysharedbooking.viewmodels.MainViewModel
-import android.R.attr.data
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.tasks.Task
 import android.content.ContentValues.TAG
+import android.graphics.Color
+import android.os.Build
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.viewModelScope
+import com.example.mysharedbooking.helpers.SocialFunctions
+import com.example.mysharedbooking.models.User
+import com.facebook.*
+import com.facebook.login.LoginResult
+import com.facebook.login.widget.LoginButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-
-
+import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.net.URL
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -48,6 +56,7 @@ class LoginFragment : Fragment() {
     private lateinit var mainViewModel: MainViewModel
     private lateinit var gso: GoogleSignInOptions
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var callbackManager: CallbackManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,11 +65,12 @@ class LoginFragment : Fragment() {
             .requestProfile()
             .build()
         googleSignInClient = GoogleSignIn.getClient(activity as MainActivity, gso)
-
+        callbackManager = CallbackManager.Factory.create()
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
     }
 
     override fun onCreateView(
@@ -69,10 +79,10 @@ class LoginFragment : Fragment() {
     ): View? {
 
         val fragmentLoginBinding: FragmentLoginBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
-
+        //activity's ViewModel shared with some fragments
         mainViewModel = activity?.run {
             ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java)
-        }!! //: throw Exception("Invalid Activity")
+        }!!
         fragmentLoginBinding.viewmodel = mainViewModel
 
         val loginResult = Observer<Boolean>{
@@ -80,7 +90,18 @@ class LoginFragment : Fragment() {
                 signIn(googleSignInClient)
             }
         }
+
+        val loginButton: LoginButton = fragmentLoginBinding.root.findViewById(R.id.facebook_button)
+        loginButton.setPermissions("email")
+        loginButton.setFragment(this)
+        loginButton.registerCallback(callbackManager, MyFacebookCallBack(mainViewModel))
+
         mainViewModel.login.observe(this, loginResult)
+        (activity!! as MainActivity).window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
+        (activity!! as MainActivity).actionBar?.hide()
 
         return fragmentLoginBinding.root
     }
@@ -94,23 +115,59 @@ class LoginFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == 2 ){
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleSignInResult(task)
+            handleGoogleSignInResult(task)
+        } else {
+            callbackManager.onActivityResult(requestCode, resultCode, data)
+            if( requestCode == 64206 && resultCode == FacebookActivity.RESULT_OK) {
+                mainViewModel.logged.value = true
+                Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment)
+                    .navigateUp()
+            }
+        }
+
+    }
+
+    class MyFacebookCallBack( val mainViewModel: MainViewModel) : FacebookCallback<LoginResult>{
+
+        override fun onCancel() {
+
+        }
+
+        override fun onError(error: FacebookException?) {
+
+        }
+
+        override fun onSuccess(result: LoginResult?) {
+            mainViewModel.fbAccessToken.value = result?.accessToken
+            SocialFunctions.SocialFunctionsHelpers.downloadFBUserInfo(result?.accessToken!!.userId, mainViewModel)
         }
     }
 
-    private fun handleSignInResult( signInResult: Task<GoogleSignInAccount>){
+    private fun handleGoogleSignInResult(signInResult: Task<GoogleSignInAccount>){
 
         try {
             val account = signInResult.getResult(ApiException::class.java)
-            println(account?.photoUrl)
+            (activity as MainActivity).googleSignInClient = googleSignInClient
+            //println(account?.familyName+ " "+ account?.givenName)
+
             mainViewModel.logged.value = true
             Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment).navigateUp()
+            mainViewModel.viewModelScope.launch(Dispatchers.IO) {
+                 MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().insertUsers(
+                    User(0,
+                        account?.givenName,
+                        account?.familyName,
+                        account?.displayName,
+                        account?.email,
+                        "",
+                        account?.photoUrl.toString(),
+                        account?.id ))
+                 SocialFunctions.SocialFunctionsHelpers.downloadUserProfilePic(URL(account?.photoUrl?.toString()), mainViewModel)
+            }
 
         } catch (e: ApiException) {
             Log.w(TAG, "signInResult:failed code=" + e.statusCode)
         }
-
-
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -131,6 +188,8 @@ class LoginFragment : Fragment() {
         super.onDetach()
         listener = null
     }
+
+
 
     /**
      * This interface must be implemented by activities that contain this

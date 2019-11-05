@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 
@@ -67,38 +68,34 @@ class HomeFrag : Fragment() {
 
         suspend fun newUser(newName: String) = withContext(Dispatchers.IO){
             if(!newName.isBlank()) {
-                myDatabase.myDao().insertUsers(User(0, "gianni", "fantoni", newName, "User"))
+                //myDatabase.myDao().insertUsers(User(0, "gianni", "fantoni", newName, "User", ))
             }
         }
-
         // Create the observer which updates the UI.
         val insertNewUser = Observer<String> { newName ->
             mainViewModel.viewModelScope.launch { newUser(newName) }
+
         }
 
-        goToBookingForm = Observer { bool ->
-            if(bool == true) {
+        goToBookingForm = Observer {
+            if( it == true ) {
                 val action = HomeFragDirections.actionHomeFragToNewBookingForm()
                 findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
                 mainViewModel.addNewBook.value = false
             }
         }
 
-        val showAllObserver = Observer<Boolean?> { bool ->
+        val showAllObserver = Observer<Boolean?> {
             mainViewModel.viewModelScope.launch { printAllUsers() }
         }
 
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         mainViewModel.insertUser.observe(this, insertNewUser)
         mainViewModel.showAllUsers.observe(this, showAllObserver)
         mainViewModel.addNewBook.observe(this, goToBookingForm)
         return fragmentHomeBinding.root
-        // Inflate the layout for this fragment
-        //return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     private suspend fun printAllUsers() = withContext(Dispatchers.IO){
-        //navController.navigate(R.id.action_mainFragment_to_usersFragment)
         val userList: List<User> = myDatabase.myDao().getAllUsers()
 
         for (user:User in userList){
@@ -109,7 +106,7 @@ class HomeFrag : Fragment() {
     override fun onStart() {
         super.onStart()
 
-        if( mainViewModel.logged.value == false ) {
+        if( mainViewModel.logged.value == null ) {
             val action = HomeFragDirections.actionHomeFragToLoginFragment()
             findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
         }

@@ -13,8 +13,6 @@ import kotlinx.coroutines.withContext
 
 class UsersViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val myDatabase: MySharedBookingDB = MainActivity.getInMemoryDatabase(application)
-
     private val userList: MutableLiveData<List<User>> = MutableLiveData()
 
     fun getUserList(): MutableLiveData<List<User>> {
