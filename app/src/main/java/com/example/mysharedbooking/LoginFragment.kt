@@ -1,5 +1,6 @@
 package com.example.mysharedbooking
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -29,7 +30,9 @@ import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.Result
 import com.google.android.material.navigation.NavigationView
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URL
@@ -70,7 +73,6 @@ class LoginFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
-
     }
 
     override fun onCreateView(
@@ -93,16 +95,12 @@ class LoginFragment : Fragment() {
 
         val loginButton: LoginButton = fragmentLoginBinding.root.findViewById(R.id.facebook_button)
         loginButton.setPermissions("email")
-        loginButton.setFragment(this)
+        loginButton.fragment = this
         loginButton.registerCallback(callbackManager, MyFacebookCallBack(mainViewModel))
 
         mainViewModel.login.observe(this, loginResult)
-        (activity!! as MainActivity).window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-        (activity!! as MainActivity).actionBar?.hide()
 
+        (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
         return fragmentLoginBinding.root
     }
 
@@ -113,18 +111,20 @@ class LoginFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 2 ){
+
+        if(requestCode == 2 && resultCode == Activity.RESULT_OK){
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             handleGoogleSignInResult(task)
+            val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()
+            Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
         } else {
-            callbackManager.onActivityResult(requestCode, resultCode, data)
             if( requestCode == 64206 && resultCode == FacebookActivity.RESULT_OK) {
+                callbackManager.onActivityResult(requestCode, resultCode, data)
                 mainViewModel.logged.value = true
-                Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment)
-                    .navigateUp()
+                val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()
+                Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
             }
         }
-
     }
 
     class MyFacebookCallBack( val mainViewModel: MainViewModel) : FacebookCallback<LoginResult>{
@@ -161,8 +161,12 @@ class LoginFragment : Fragment() {
                         account?.email,
                         "",
                         account?.photoUrl.toString(),
-                        account?.id ))
-                 SocialFunctions.SocialFunctionsHelpers.downloadUserProfilePic(URL(account?.photoUrl?.toString()), mainViewModel)
+                        account?.id
+                    )
+                 )
+
+                 mainViewModel.currentUser.postValue(MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().findUserByEmail(account?.email!!))
+                SocialFunctions.SocialFunctionsHelpers.downloadUserProfilePic(URL(account.photoUrl?.toString()), mainViewModel)
             }
 
         } catch (e: ApiException) {

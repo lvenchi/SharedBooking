@@ -6,6 +6,10 @@ import com.example.mysharedbooking.models.User
 
 @Dao
 interface SharedBookingDBDao {
+
+    @Query("SELECT profile_pic FROM user WHERE uid = :userId")
+    fun getPhotoLinkByUserId(userId: Long) : String
+
     @Query("SELECT * FROM user")
     fun getAllUsers(): List<User>
 
@@ -17,6 +21,9 @@ interface SharedBookingDBDao {
 
     @Query("SELECT * FROM user WHERE first_name LIKE :first AND last_name LIKE :last LIMIT 1")
     fun findUserByName(first: String, last: String): User
+
+    @Query("SELECT * FROM user WHERE email LIKE :email LIMIT 1")
+    fun findUserByEmail(email: String): User
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertUsers(vararg users: User)

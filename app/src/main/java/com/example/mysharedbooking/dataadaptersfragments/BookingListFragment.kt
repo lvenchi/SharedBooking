@@ -54,19 +54,22 @@ class BookingListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        /*
         val downloadBooking = Observer<List<Booking>> { newList ->
-            bookingRecyclerView?.adapter =
+            ownedBookingRecyclerView?.adapter =
                 BookingAdapter(
                     newList
                 )
         }
         bookingsViewModel.clientBookingList.observe(this, downloadBooking)
 
-        bookingRecyclerView = activity?.findViewById<RecyclerView>(R.id.booking_recycler_view)?.apply {
+        ownedBookingRecyclerView = activity?.findViewById<RecyclerView>(R.id.booking_recycler_view)?.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
             BookingAdapter(clientBookingList)
         }
+
+         */
     }
 
     override fun onCreateView(

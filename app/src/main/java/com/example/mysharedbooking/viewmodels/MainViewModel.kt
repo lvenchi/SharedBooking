@@ -3,9 +3,6 @@ package com.example.mysharedbooking.viewmodels
 import android.app.Application
 import android.view.View
 import android.widget.Toast
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.mysharedbooking.RESTOperations
 import com.example.mysharedbooking.models.User
 import kotlinx.coroutines.Dispatchers
@@ -17,11 +14,17 @@ import android.util.JsonReader
 import android.util.Xml
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.*
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
+import com.example.mysharedbooking.SharedBookingRepository
+import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.MySharedBookingDB
+import com.example.mysharedbooking.models.UserBooking
 import com.facebook.AccessToken
+import com.google.android.gms.tasks.Tasks.await
+import kotlinx.coroutines.async
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedReader
@@ -41,34 +44,57 @@ fun setImageDrawable(view: ImageView, drawable: Drawable?) {
 }
 
 
-
 class MainViewModel(application: Application) : AndroidViewModel(application){
 
+    private lateinit var sharedBookingRepository: SharedBookingRepository
+
+    val currentUser: MutableLiveData<User> = MutableLiveData()
     val user: MutableLiveData<User> = MutableLiveData()
     val newUser : MutableLiveData<String> = MutableLiveData("")
-    val insertUser : MutableLiveData<String> = MutableLiveData()
-    val showAllUsers: MutableLiveData<Boolean?> = MutableLiveData()
     val addNewBook: MutableLiveData<Boolean?> = MutableLiveData(false)
     val webResponses: MutableLiveData<String> = MutableLiveData("")
     val login: MutableLiveData<Boolean> = MutableLiveData()
     val logged: MutableLiveData<Boolean> = MutableLiveData()
     val fbAccessToken: MutableLiveData<AccessToken> = MutableLiveData()
-    var fbId: String = application.getString(R.string.facebook_app_id)
+
+    var bookingList : LiveData<List<Booking>> = MutableLiveData()
+    var availableBookingList : LiveData<List<Booking>> = MutableLiveData()
+    var myBookedBookingList : LiveData<List<Booking>> = MutableLiveData()
 
     var profileImage: MutableLiveData<WeakReference<Drawable>> = MutableLiveData()
 
     val myDatabase: MySharedBookingDB = MainActivity.getInMemoryDatabase(application)
 
+    fun initRepo(uid : Long){
+        sharedBookingRepository = SharedBookingRepository(this.getApplication(), uid)
+        myBookedBookingList = sharedBookingRepository.getBookingsOfUser()
+        bookingList = sharedBookingRepository.getOwningBookings()
+        availableBookingList = sharedBookingRepository.getBookableBookings()
+    }
+
+    fun getMyBookedBookings(): LiveData<List<Booking>>{
+        return myBookedBookingList
+    }
+
+    fun getOwnedBookings(): LiveData<List<Booking>>{
+        return bookingList
+    }
+
+    fun getAvailableBookings(): LiveData<List<Booking>>{
+        return availableBookingList
+    }
+
+    fun getLinkProfilePicByUserId(userId: Long): String{
+        return sharedBookingRepository.getUserProfilePicUrl(userId)
+    }
+
+    fun insertMyBooking(userBooking: UserBooking){
+        sharedBookingRepository.insertNewUserBooking(userBooking, this.viewModelScope)
+        //sharedBookingRepository.insertBookedBooking(userBooking)
+    }
+
     fun loginWithGoogle(view: View){
         login.value = true
-    }
-
-    fun clicked( view: View ){
-        insertUser.value = newUser.value
-    }
-
-    fun showall( view: View){
-        showAllUsers.value = (showAllUsers.value)?.not()
     }
 
     fun addNewBooking( view: View ){
@@ -84,5 +110,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
                 }
             }
         }
+    }
+
+    fun resetLists( lifecycleOwner: LifecycleOwner ){
+        bookingList.removeObservers(lifecycleOwner)
+        bookingList.value?.toMutableSet()?.clear()
+        availableBookingList.value?.toMutableSet()?.clear()
+        myBookedBookingList.value?.toMutableSet()?.clear()
     }
 }

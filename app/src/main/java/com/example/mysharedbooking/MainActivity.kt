@@ -2,6 +2,7 @@ package com.example.mysharedbooking
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
@@ -9,12 +10,17 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.NavGraph
 import androidx.navigation.Navigation
 import androidx.navigation.Navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.navigateUp
 import androidx.navigation.ui.NavigationUI.setupWithNavController
+import androidx.navigation.ui.setupWithNavController
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -23,6 +29,7 @@ import com.example.mysharedbooking.dataadaptersfragments.UserListFragment
 import com.example.mysharedbooking.databinding.DrawerHeaderBinding
 import com.example.mysharedbooking.databinding.MainLayoutBinding
 import com.example.mysharedbooking.models.MySharedBookingDB
+import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -30,6 +37,7 @@ import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.material.navigation.NavigationView
 
 import kotlinx.android.synthetic.main.main_layout.*
 
@@ -41,6 +49,7 @@ class MainActivity : AppCompatActivity(),
     var googleSignInClient: GoogleSignInClient? = null
     lateinit var mainViewmodel: MainViewModel
     lateinit var callbackManager: CallbackManager
+    lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onFragmentInteraction(uri: Uri) {
 
@@ -50,6 +59,7 @@ class MainActivity : AppCompatActivity(),
         private var INSTANCE: MySharedBookingDB? = null
 
         fun getInMemoryDatabase(context: Context) : MySharedBookingDB {
+
             INSTANCE = INSTANCE ?: Room.databaseBuilder(context, MySharedBookingDB::class.java, "MyDB")
                 .fallbackToDestructiveMigration() //temporary
                 .build()
@@ -59,9 +69,8 @@ class MainActivity : AppCompatActivity(),
         fun destroyInstance() {
             INSTANCE = null
         }
+        lateinit var currentUser: User
     }
-
-    //private val menuListener:  = this::onMenuItemSelected
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,14 +78,13 @@ class MainActivity : AppCompatActivity(),
         mainViewmodel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: MainLayoutBinding = DataBindingUtil.setContentView(this, R.layout.main_layout)
         binding.viewmodel = mainViewmodel
-        //setContentView(binding.root)
         setupNavigation(binding, mainViewmodel)
         callbackManager = CallbackManager.Factory.create()
 
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        return navigateUp(findNavController(this, R.id.nav_host_fragment), drawerLayout)
+   override fun onSupportNavigateUp(): Boolean {
+       return navigateUp(findNavController(this, R.id.nav_host_fragment), appBarConfiguration)
     }
 
     override fun onBackPressed() {
@@ -90,9 +98,13 @@ class MainActivity : AppCompatActivity(),
     private fun setupNavigation(binding: MainLayoutBinding, mainViewModel: MainViewModel) {
         val navController = findNavController(this, R.id.nav_host_fragment)
 
-        NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout)
+        appBarConfiguration = AppBarConfiguration.Builder(navController.graph).setDrawerLayout(drawerLayout).build()
+        appBarConfiguration.topLevelDestinations.addAll(setOf(R.id.homeFrag, R.id.loginFragment, R.id.nav_host_fragment,
+            R.id.userListFragment, R.id.bookingListFragment, R.id.bookExistingBookingFragment))
+        NavigationUI.setupActionBarWithNavController(this,
+                                             navController,
+                                             appBarConfiguration)
 
-        setupWithNavController(navigationView, navController)
         // Handle nav drawer item clicks
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when(menuItem.title){
@@ -113,8 +125,7 @@ class MainActivity : AppCompatActivity(),
                 }
                 getString(R.string.logout) -> {
                     if( googleSignInClient != null ) googleLogout() else{ facebookLogout() }
-                    val action = HomeFragDirections.actionHomeFragToLoginFragment()
-                    navController.navigate(action)
+                    mainViewmodel.resetLists(this)
                 }
             }
             menuItem.isChecked = true
@@ -130,7 +141,9 @@ class MainActivity : AppCompatActivity(),
     fun googleLogout(){
         mainViewmodel.logged.value = false
         mainViewmodel.login.value = false
-        googleSignInClient?.signOut()
+        googleSignInClient?.signOut()?.addOnCompleteListener {
+            findNavController(this, R.id.nav_host_fragment).navigateUp()
+        }
         googleSignInClient = null
     }
 

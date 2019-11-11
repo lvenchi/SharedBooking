@@ -101,7 +101,11 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
             MainActivity.getInMemoryDatabase(activity!!.applicationContext).myDao().insertBooking(res)
         }.invokeOnCompletion { activity?.onBackPressed()}*/
 
-    val goHome = Observer<Booking>{ activity?.onBackPressed()}
+    val goHome = Observer<Booking>{
+        nbfviewmodel.viewModelScope.launch(Dispatchers.IO) {
+            MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().insertBooking(it)}
+        activity?.onBackPressed()
+    }
 
     private val showDatePickerDialog = Observer<Int> {
         val newFragment = DatePickerFragment(

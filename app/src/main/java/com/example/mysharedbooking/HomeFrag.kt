@@ -7,21 +7,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
+import androidx.lifecycle.*
 
-import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
-import androidx.navigation.Navigation
 import androidx.navigation.Navigation.findNavController
-import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mysharedbooking.dataadaptersfragments.BookableBookingAdapter
+import com.example.mysharedbooking.dataadaptersfragments.BookingAdapter
 import com.example.mysharedbooking.databinding.FragmentHomeBinding
+import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.MySharedBookingDB
 import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -46,6 +45,10 @@ class HomeFrag : Fragment() {
     private var listener: OnFragmentInteractionListener? = null
     lateinit var goToBookingForm: Observer<Boolean?>
     lateinit var myDatabase: MySharedBookingDB
+    var ownedBookingRecyclerView: RecyclerView? = null
+    var availableBookingRecyclerView: RecyclerView? = null
+    var myBookedBookingsBookingRecyclerView: RecyclerView? = null
+
     private lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,28 +57,10 @@ class HomeFrag : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val fragmentHomeBinding: FragmentHomeBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
         mainViewModel = activity?.run {
             ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java)
         }!!
-        fragmentHomeBinding.viewmodel = mainViewModel
-
-        suspend fun newUser(newName: String) = withContext(Dispatchers.IO){
-            if(!newName.isBlank()) {
-                //myDatabase.myDao().insertUsers(User(0, "gianni", "fantoni", newName, "User", ))
-            }
-        }
-        // Create the observer which updates the UI.
-        val insertNewUser = Observer<String> { newName ->
-            mainViewModel.viewModelScope.launch { newUser(newName) }
-
-        }
 
         goToBookingForm = Observer {
             if( it == true ) {
@@ -84,16 +69,39 @@ class HomeFrag : Fragment() {
                 mainViewModel.addNewBook.value = false
             }
         }
+        mainViewModel.addNewBook.observe(this, goToBookingForm)
 
-        val showAllObserver = Observer<Boolean?> {
-            mainViewModel.viewModelScope.launch { printAllUsers() }
+        val loadBookings = Observer<User> { user ->
+            MainActivity.currentUser = mainViewModel.currentUser.value!!
+
+            mainViewModel.initRepo(user.uid)
+
+            mainViewModel.getMyBookedBookings().observe(this, Observer<List<Booking>> {
+                (myBookedBookingsBookingRecyclerView?.adapter as BookingAdapter).setData(it)
+            })
+            mainViewModel.getAvailableBookings().observe(this, Observer<List<Booking>> {
+                (availableBookingRecyclerView?.adapter as BookableBookingAdapter).setData(it)
+            })
+            mainViewModel.getOwnedBookings().observe(this, Observer<List<Booking>> {
+                (ownedBookingRecyclerView?.adapter as BookingAdapter).setData(it)
+            })
         }
 
-        mainViewModel.insertUser.observe(this, insertNewUser)
-        mainViewModel.showAllUsers.observe(this, showAllObserver)
-        mainViewModel.addNewBook.observe(this, goToBookingForm)
+        mainViewModel.currentUser.observe(this, loadBookings)
+
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val fragmentHomeBinding: FragmentHomeBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
+        fragmentHomeBinding.viewmodel = mainViewModel
+
+        (activity as MainActivity).supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
         return fragmentHomeBinding.root
     }
+
 
     private suspend fun printAllUsers() = withContext(Dispatchers.IO){
         val userList: List<User> = myDatabase.myDao().getAllUsers()
@@ -103,13 +111,30 @@ class HomeFrag : Fragment() {
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        ownedBookingRecyclerView =  activity?.findViewById<RecyclerView>(R.id.my_bookings_recycler_view)
+        availableBookingRecyclerView =  activity?.findViewById<RecyclerView>(R.id.available_bookings_recycler_view)
+        myBookedBookingsBookingRecyclerView =  activity?.findViewById<RecyclerView>(R.id.my_booked_bookings_recycler_view)
+
+        myBookedBookingsBookingRecyclerView?.adapter = BookingAdapter(activity!!)
+        myBookedBookingsBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
+
+        availableBookingRecyclerView?.adapter = BookableBookingAdapter(activity!!, mainViewModel)
+        availableBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
+
+        ownedBookingRecyclerView?.adapter = BookingAdapter(activity!!)
+        ownedBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
+
+        ownedBookingRecyclerView?.setHasFixedSize(true)
+        availableBookingRecyclerView?.setHasFixedSize(true)
+        myBookedBookingsBookingRecyclerView?.setHasFixedSize(true)
+
+    }
+
     override fun onStart() {
         super.onStart()
-
-        if( mainViewModel.logged.value == null ) {
-            val action = HomeFragDirections.actionHomeFragToLoginFragment()
-            findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
-        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event

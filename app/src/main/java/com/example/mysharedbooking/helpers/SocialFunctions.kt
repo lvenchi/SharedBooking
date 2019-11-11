@@ -1,7 +1,9 @@
 package com.example.mysharedbooking.helpers
 
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +64,7 @@ class SocialFunctions {
                                         profilePic = profileURL,
                                         providerId = serverResponse.getString("id") )
                                 )
+                                viewModel.currentUser.postValue(viewModel.myDatabase.myDao().findUserByEmail( serverResponse.getString("email")))
                                 downloadUserProfilePic(
                                     URL(
                                         serverResponse
@@ -109,8 +112,8 @@ class SocialFunctions {
                         }
                     }
                 }
-            } catch (exception: MalformedURLException){
-                println(exception.toString())
+            } catch (exception: Exception){
+                Log.e("Photo", exception.toString())
             } finally {
                 // Close Stream and disconnect HTTP connection.
                 //connection?.inputStream?.close()

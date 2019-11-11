@@ -1,63 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="viewmodel"
             type="com.example.mysharedbooking.viewmodels.MainViewModel" />
     </data>
-<FrameLayout
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".HomeFrag">
-
-
-    <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@{viewmodel.newUser}"
-
-        />
-
-    <EditText
-        android:id="@+id/new_user"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/my_bookings"
+        android:text="My Bookings"/>
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:text="@={viewmodel.newUser}" />
+        android:id="@+id/my_bookings_recycler_view"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:layout_below="@id/my_bookings"/>
 
-    <Button
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/available_bookings"
+        android:layout_below="@id/my_bookings_recycler_view"
+        android:text="Available Bookings"/>
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="75sp"
-        android:onClick="@{viewmodel.clicked}"
-        android:text="@string/insert_user" />
+        android:layout_below="@id/available_bookings"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:id="@+id/available_bookings_recycler_view"/>
 
-    <Button
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/my_booked_bookings"
+        android:layout_below="@id/available_bookings_recycler_view"
+        android:text="My Bookings"/>
+
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="130sp"
-        android:onClick="@{viewmodel.showall}"
-        android:text="@string/show_all_users" />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="190sp"
-
-        android:onClick="@{viewmodel.callApi}"
-        android:text="Call Api" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:layout_below="@id/my_booked_bookings"
+        android:id="@+id/my_booked_bookings_recycler_view"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/newBook"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_marginEnd="20sp"
         android:layout_marginBottom="20sp"
         android:onClick="@{viewmodel.addNewBooking}" />
 
-</FrameLayout>
+</RelativeLayout>
 </layout>

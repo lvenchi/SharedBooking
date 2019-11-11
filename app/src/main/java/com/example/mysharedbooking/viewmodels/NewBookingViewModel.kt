@@ -35,8 +35,8 @@ class NewBookingViewModel(application: Application) : AndroidViewModel(applicati
 
     fun insertNewBooking( view: View){
         viewModelScope.launch (Dispatchers.IO) {
-                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false, userId.value!!)
-            RESTOperations.Operations.registerBooking(booking)
+                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false, MainActivity.currentUser.uid)
+            //RESTOperations.Operations.registerBooking(booking)
             //database.myDao().insertBooking(booking)
                 newBooking.postValue(booking)
         }
