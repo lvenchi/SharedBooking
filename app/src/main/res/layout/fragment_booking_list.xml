@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:text="GetBookings"
             android:layout_marginStart="120sp"
-            android:onClick="@{viewmodel.getBookingsByUserId}"/>
+            android:onClick="@{viewmodel::getBookingsByUserId}"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"

@@ -32,7 +32,12 @@
         android:id="@+id/newBookingForm"
         android:name="com.example.mysharedbooking.NewBookingForm"
         android:label="fragment_new_booking_form"
-        tools:layout="@layout/fragment_new_booking_form" />
+        tools:layout="@layout/fragment_new_booking_form" >
+        <argument
+            android:name="userId"
+            app:argType="long"
+            android:defaultValue="0L" />
+    </fragment>
     <fragment
         android:id="@+id/bookingListFragment"
         android:name="com.example.mysharedbooking.dataadaptersfragments.BookingListFragment"

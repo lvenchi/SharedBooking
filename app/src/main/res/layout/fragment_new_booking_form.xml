@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_alignParentBottom="true"
-            android:onClick="@{viewmodel.insertNewBooking}"
+            android:onClick="@{viewmodel::insertNewBooking}"
             android:text="@string/book"/>
     </RelativeLayout>
 </layout>

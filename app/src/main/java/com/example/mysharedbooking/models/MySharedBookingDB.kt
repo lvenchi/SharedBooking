@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.example.mysharedbooking.models.daos.SharedBookingDBDao
 import com.example.mysharedbooking.models.daos.UserBookingDao
 
-@Database(entities = [User::class, Booking::class, UserBooking::class], version = 11)
+@Database(entities = [User::class, Booking::class, UserBooking::class], version = 13)
 abstract class MySharedBookingDB : RoomDatabase() {
 
     abstract fun myDao(): SharedBookingDBDao

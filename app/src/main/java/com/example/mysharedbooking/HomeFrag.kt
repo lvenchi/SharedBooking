@@ -8,20 +8,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.*
 
 import androidx.navigation.Navigation.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.mysharedbooking.dataadaptersfragments.BookableBookingAdapter
-import com.example.mysharedbooking.dataadaptersfragments.BookingAdapter
+import androidx.viewpager.widget.ViewPager
 import com.example.mysharedbooking.databinding.FragmentHomeBinding
-import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.MySharedBookingDB
 import com.example.mysharedbooking.models.User
+import com.example.mysharedbooking.tabfragments.AvailableBookingsFragment
+import com.example.mysharedbooking.tabfragments.MyBookedBookingsFragment
+import com.example.mysharedbooking.tabfragments.MyPublishedBookingsFragment
 import com.example.mysharedbooking.viewmodels.MainViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.google.android.material.tabs.TabLayout
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -45,11 +45,11 @@ class HomeFrag : Fragment() {
     private var listener: OnFragmentInteractionListener? = null
     lateinit var goToBookingForm: Observer<Boolean?>
     lateinit var myDatabase: MySharedBookingDB
-    var ownedBookingRecyclerView: RecyclerView? = null
-    var availableBookingRecyclerView: RecyclerView? = null
-    var myBookedBookingsBookingRecyclerView: RecyclerView? = null
-
+    lateinit var tabLayout: TabLayout
+    lateinit var viewPager: ViewPager
+    lateinit var loadBookingObserver: Observer<User>
     private lateinit var mainViewModel: MainViewModel
+    private var demoCollectionPagerAdapter : DemoCollectionPagerAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,31 +64,30 @@ class HomeFrag : Fragment() {
 
         goToBookingForm = Observer {
             if( it == true ) {
-                val action = HomeFragDirections.actionHomeFragToNewBookingForm()
+                val action = HomeFragDirections.actionHomeFragToNewBookingForm(userId = mainViewModel.currentUser.value!!.uid)
                 findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
                 mainViewModel.addNewBook.value = false
             }
         }
         mainViewModel.addNewBook.observe(this, goToBookingForm)
 
-        val loadBookings = Observer<User> { user ->
-            MainActivity.currentUser = mainViewModel.currentUser.value!!
+        demoCollectionPagerAdapter = DemoCollectionPagerAdapter(childFragmentManager)
 
-            mainViewModel.initRepo(user.uid)
+        /*loadBookingObserver = Observer { user ->
+            if(user!= null) {*/
+                mainViewModel.initRepo(mainViewModel.currentUser.value!!.uid)
 
-            mainViewModel.getMyBookedBookings().observe(this, Observer<List<Booking>> {
-                (myBookedBookingsBookingRecyclerView?.adapter as BookingAdapter).setData(it)
-            })
-            mainViewModel.getAvailableBookings().observe(this, Observer<List<Booking>> {
-                (availableBookingRecyclerView?.adapter as BookableBookingAdapter).setData(it)
-            })
-            mainViewModel.getOwnedBookings().observe(this, Observer<List<Booking>> {
-                (ownedBookingRecyclerView?.adapter as BookingAdapter).setData(it)
-            })
+                demoCollectionPagerAdapter?.addFragment(AvailableBookingsFragment(), "Available")
+                demoCollectionPagerAdapter?.addFragment(MyPublishedBookingsFragment(), "Published")
+                demoCollectionPagerAdapter?.addFragment(MyBookedBookingsFragment(), "My Booked")
+
+            /*}
         }
+        mainViewModel.currentUser.observe(this, loadBookingObserver)*/
+    }
 
-        mainViewModel.currentUser.observe(this, loadBookings)
-
+    override fun onDestroyView() {
+        super.onDestroyView()
     }
 
     override fun onCreateView(
@@ -102,36 +101,17 @@ class HomeFrag : Fragment() {
         return fragmentHomeBinding.root
     }
 
-
-    private suspend fun printAllUsers() = withContext(Dispatchers.IO){
-        val userList: List<User> = myDatabase.myDao().getAllUsers()
-
-        for (user:User in userList){
-            println(user.username+"")
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ownedBookingRecyclerView =  activity?.findViewById<RecyclerView>(R.id.my_bookings_recycler_view)
-        availableBookingRecyclerView =  activity?.findViewById<RecyclerView>(R.id.available_bookings_recycler_view)
-        myBookedBookingsBookingRecyclerView =  activity?.findViewById<RecyclerView>(R.id.my_booked_bookings_recycler_view)
-
-        myBookedBookingsBookingRecyclerView?.adapter = BookingAdapter(activity!!)
-        myBookedBookingsBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
-
-        availableBookingRecyclerView?.adapter = BookableBookingAdapter(activity!!, mainViewModel)
-        availableBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
-
-        ownedBookingRecyclerView?.adapter = BookingAdapter(activity!!)
-        ownedBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
-
-        ownedBookingRecyclerView?.setHasFixedSize(true)
-        availableBookingRecyclerView?.setHasFixedSize(true)
-        myBookedBookingsBookingRecyclerView?.setHasFixedSize(true)
+        tabLayout = view.findViewById(R.id.tab_layout)
+        viewPager = view.findViewById(R.id.pager)
+        viewPager.adapter = demoCollectionPagerAdapter
+        viewPager.offscreenPageLimit = 2
+        tabLayout.setupWithViewPager(viewPager)
 
     }
+
 
     override fun onStart() {
         super.onStart()
@@ -192,5 +172,33 @@ class HomeFrag : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+
+
+    class DemoCollectionPagerAdapter(fragmentManager: FragmentManager) :
+        FragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+
+        private var frList: ArrayList<Fragment> = ArrayList()
+        private var titleList: ArrayList<String> = ArrayList()
+
+        fun addFragment(fragment: Fragment, title: String){
+            frList.add(fragment)
+            titleList.add(title)
+        }
+        override fun getCount(): Int  = frList.size
+
+        override fun getItem(i: Int): Fragment {
+            return frList[i]
+        }
+
+        override fun getPageTitle(position: Int): CharSequence {
+            return titleList[position]
+        }
+
+        fun resetList(){
+            frList.clear()
+            titleList.clear()
+        }
     }
 }

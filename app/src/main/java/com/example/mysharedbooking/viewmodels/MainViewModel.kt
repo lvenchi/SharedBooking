@@ -49,8 +49,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
     private lateinit var sharedBookingRepository: SharedBookingRepository
 
     val currentUser: MutableLiveData<User> = MutableLiveData()
-    val user: MutableLiveData<User> = MutableLiveData()
-    val newUser : MutableLiveData<String> = MutableLiveData("")
     val addNewBook: MutableLiveData<Boolean?> = MutableLiveData(false)
     val webResponses: MutableLiveData<String> = MutableLiveData("")
     val login: MutableLiveData<Boolean> = MutableLiveData()
@@ -89,8 +87,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
     }
 
     fun insertMyBooking(userBooking: UserBooking){
-        sharedBookingRepository.insertNewUserBooking(userBooking, this.viewModelScope)
-        //sharedBookingRepository.insertBookedBooking(userBooking)
+        sharedBookingRepository.insertNewUserBooking(userBooking, viewModelScope)
+    }
+
+    fun removeUserBooking( userBooking: UserBooking){
+        sharedBookingRepository.removeBookedBooking(userBooking, viewModelScope)
+    }
+
+    fun removeBooking( booking: Booking ){
+        sharedBookingRepository.removeBooking( booking, viewModelScope)
     }
 
     fun loginWithGoogle(view: View){
@@ -103,7 +108,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
 
     fun callApi( view: View){
         viewModelScope.launch (Dispatchers.IO) {
-            val restResponse = RESTOperations.Operations.registerUser( newUser.value!! )
+            val restResponse = RESTOperations.Operations.registerUser( currentUser.value!!.email!! )
             if (restResponse != HttpURLConnection.HTTP_CREATED) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(view.context, "Failed to Insert", Toast.LENGTH_SHORT).show()
@@ -111,11 +116,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
             }
         }
     }
-
+    //clears the components and observers
     fun resetLists( lifecycleOwner: LifecycleOwner ){
         bookingList.removeObservers(lifecycleOwner)
+        availableBookingList.removeObservers(lifecycleOwner)
+        myBookedBookingList.removeObservers(lifecycleOwner)
+
         bookingList.value?.toMutableSet()?.clear()
         availableBookingList.value?.toMutableSet()?.clear()
         myBookedBookingList.value?.toMutableSet()?.clear()
+
     }
 }

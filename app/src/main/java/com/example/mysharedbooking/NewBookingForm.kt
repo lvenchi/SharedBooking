@@ -45,9 +45,11 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var nbfviewmodel: NewBookingViewModel
+    private var userId: Long? = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        userId = arguments?.getLong("userId")
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -83,6 +85,7 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
         val fragmentNewBookingFormBinding: FragmentNewBookingFormBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_new_booking_form, container, false)
         fragmentNewBookingFormBinding.lifecycleOwner = this
         nbfviewmodel = ViewModelProviders.of(this).get(NewBookingViewModel::class.java)
+        nbfviewmodel.userId.postValue(userId)
         fragmentNewBookingFormBinding.viewmodel = nbfviewmodel
 
         nbfviewmodel.newBooking.observe(this, goHome)
@@ -103,7 +106,8 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
 
     val goHome = Observer<Booking>{
         nbfviewmodel.viewModelScope.launch(Dispatchers.IO) {
-            MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().insertBooking(it)}
+            MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().insertBooking(it)
+        }
         activity?.onBackPressed()
     }
 

@@ -16,5 +16,6 @@
     <string name="list_booking">List Booking</string>
     <string name="manage_links">Manage Links</string>
     <string name="logout">Logout</string>
+    <string name="delete">Delete</string>
 
 </resources>

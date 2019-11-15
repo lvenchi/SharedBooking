@@ -6,6 +6,7 @@
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:id="@+id/bookable_user_image"
         android:layout_alignParentStart="true"/>
     <TextView
@@ -21,5 +22,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/button_book"
         android:text="BOOK"
+        android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"/>
 </RelativeLayout>

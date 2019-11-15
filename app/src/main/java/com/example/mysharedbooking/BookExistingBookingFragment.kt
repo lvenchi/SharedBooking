@@ -8,13 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mysharedbooking.dataadaptersfragments.BookingAdapter
 import com.example.mysharedbooking.databinding.FragmentBookExistingBookingBinding
-import com.example.mysharedbooking.databinding.FragmentNewBookingFormBinding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.viewmodels.UserBookingViewModel
 

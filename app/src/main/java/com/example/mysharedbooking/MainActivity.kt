@@ -10,7 +10,10 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavGraph
@@ -38,6 +41,7 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.tabs.TabLayout
 
 import kotlinx.android.synthetic.main.main_layout.*
 
@@ -69,12 +73,10 @@ class MainActivity : AppCompatActivity(),
         fun destroyInstance() {
             INSTANCE = null
         }
-        lateinit var currentUser: User
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         mainViewmodel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: MainLayoutBinding = DataBindingUtil.setContentView(this, R.layout.main_layout)
         binding.viewmodel = mainViewmodel
@@ -126,6 +128,7 @@ class MainActivity : AppCompatActivity(),
                 getString(R.string.logout) -> {
                     if( googleSignInClient != null ) googleLogout() else{ facebookLogout() }
                     mainViewmodel.resetLists(this)
+                    mainViewModel.currentUser.postValue(null)
                 }
             }
             menuItem.isChecked = true
@@ -142,14 +145,16 @@ class MainActivity : AppCompatActivity(),
         mainViewmodel.logged.value = false
         mainViewmodel.login.value = false
         googleSignInClient?.signOut()?.addOnCompleteListener {
-            findNavController(this, R.id.nav_host_fragment).navigateUp()
+            findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
+            googleSignInClient = null
         }
-        googleSignInClient = null
     }
 
     fun facebookLogout(){
         mainViewmodel.logged.value = false
         mainViewmodel.login.value = false
         LoginManager.getInstance().logOut()
+        findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
     }
+
 }

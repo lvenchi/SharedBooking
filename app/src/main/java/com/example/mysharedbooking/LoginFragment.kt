@@ -73,6 +73,17 @@ class LoginFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+        mainViewModel = activity?.run {
+            ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java)
+        }!!
+
+        val loginResult = Observer<Boolean>{
+            if(it) {
+                signIn(googleSignInClient)
+            }
+        }
+
+        mainViewModel.login.observe(this, loginResult)
     }
 
     override fun onCreateView(
@@ -82,23 +93,13 @@ class LoginFragment : Fragment() {
 
         val fragmentLoginBinding: FragmentLoginBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
         //activity's ViewModel shared with some fragments
-        mainViewModel = activity?.run {
-            ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java)
-        }!!
-        fragmentLoginBinding.viewmodel = mainViewModel
 
-        val loginResult = Observer<Boolean>{
-            if(it) {
-                signIn(googleSignInClient)
-            }
-        }
+        fragmentLoginBinding.viewmodel = mainViewModel
 
         val loginButton: LoginButton = fragmentLoginBinding.root.findViewById(R.id.facebook_button)
         loginButton.setPermissions("email")
         loginButton.fragment = this
         loginButton.registerCallback(callbackManager, MyFacebookCallBack(mainViewModel))
-
-        mainViewModel.login.observe(this, loginResult)
 
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
         return fragmentLoginBinding.root
@@ -114,9 +115,7 @@ class LoginFragment : Fragment() {
 
         if(requestCode == 2 && resultCode == Activity.RESULT_OK){
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleGoogleSignInResult(task)
-            val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()
-            Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
+            SocialFunctions.SocialFunctionsHelpers.handleGoogleSignInResult(task, activity!! as MainActivity, mainViewModel, googleSignInClient)
         } else {
             if( requestCode == 64206 && resultCode == FacebookActivity.RESULT_OK) {
                 callbackManager.onActivityResult(requestCode, resultCode, data)
@@ -143,37 +142,6 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun handleGoogleSignInResult(signInResult: Task<GoogleSignInAccount>){
-
-        try {
-            val account = signInResult.getResult(ApiException::class.java)
-            (activity as MainActivity).googleSignInClient = googleSignInClient
-            //println(account?.familyName+ " "+ account?.givenName)
-
-            mainViewModel.logged.value = true
-            Navigation.findNavController(activity as MainActivity, R.id.nav_host_fragment).navigateUp()
-            mainViewModel.viewModelScope.launch(Dispatchers.IO) {
-                 MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().insertUsers(
-                    User(0,
-                        account?.givenName,
-                        account?.familyName,
-                        account?.displayName,
-                        account?.email,
-                        "",
-                        account?.photoUrl.toString(),
-                        account?.id
-                    )
-                 )
-
-                 mainViewModel.currentUser.postValue(MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().findUserByEmail(account?.email!!))
-                SocialFunctions.SocialFunctionsHelpers.downloadUserProfilePic(URL(account.photoUrl?.toString()), mainViewModel)
-            }
-
-        } catch (e: ApiException) {
-            Log.w(TAG, "signInResult:failed code=" + e.statusCode)
-        }
-    }
-
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
         listener?.onFragmentInteraction(uri)
@@ -192,8 +160,6 @@ class LoginFragment : Fragment() {
         super.onDetach()
         listener = null
     }
-
-
 
     /**
      * This interface must be implemented by activities that contain this

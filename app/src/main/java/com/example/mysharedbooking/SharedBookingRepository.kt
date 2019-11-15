@@ -49,35 +49,27 @@ class SharedBookingRepository(application: Application, uid: Long) {
         return bookableBookings
     }
 
-    fun insertBookedBooking( userBooking: UserBooking){
-        insertUserBookingAsyncTask(userBookingDao).execute(userBooking)
+    fun removeBookedBooking( userBooking: UserBooking, mainViewModelScope: CoroutineScope){
+        mainViewModelScope.launch (Dispatchers.IO){
+            userBookingDao.removeUserBooking(userBooking)
+        }
     }
 
-    fun insertNewBooking( newBooking: Booking){
-        insertNewBookingAsyncTask(myDatabaseDao).execute(newBooking)
+    fun removeBooking( booking: Booking, mainViewModelScope: CoroutineScope){
+        mainViewModelScope.launch (Dispatchers.IO){
+            myDatabaseDao.deleteBooking(booking)
+        }
+    }
+
+    fun insertNewBooking( newBooking: Booking, mainViewModelScope: CoroutineScope){
+        mainViewModelScope.launch (Dispatchers.IO) {
+            myDatabaseDao.insertBooking(newBooking)
+        }
     }
 
     fun insertNewUserBooking(userBooking: UserBooking, mainViewModelScope: CoroutineScope){
         mainViewModelScope.launch (Dispatchers.IO){
             userBookingDao.insert(userBooking = userBooking)
-        }
-    }
-
-    private class insertUserBookingAsyncTask internal constructor(private val mAsyncTaskDao: UserBookingDao) :
-        AsyncTask<UserBooking, Void, Void>() {
-
-        override fun doInBackground(vararg params: UserBooking): Void? {
-            mAsyncTaskDao.insert(params[0])
-            return null
-        }
-    }
-
-    private class insertNewBookingAsyncTask internal constructor(private val mAsyncTaskDao: SharedBookingDBDao) :
-        AsyncTask<Booking, Void, Void>() {
-
-        override fun doInBackground(vararg params: Booking): Void? {
-            mAsyncTaskDao.insertBooking(params[0])
-            return null
         }
     }
 }

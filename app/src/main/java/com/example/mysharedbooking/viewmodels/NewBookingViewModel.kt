@@ -25,7 +25,6 @@ fun setText(view: TextView, text: CharSequence) {
 
 class NewBookingViewModel(application: Application) : AndroidViewModel(application) {
 
-    val database: MySharedBookingDB by lazy { MainActivity.getInMemoryDatabase(application) }
     val newBooking: MutableLiveData<Booking> = MutableLiveData()
     val showDatePick: MutableLiveData<Int> = MutableLiveData()
     val type: MutableLiveData<String> = MutableLiveData("Choose Type")
@@ -35,7 +34,7 @@ class NewBookingViewModel(application: Application) : AndroidViewModel(applicati
 
     fun insertNewBooking( view: View){
         viewModelScope.launch (Dispatchers.IO) {
-                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false, MainActivity.currentUser.uid)
+                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false, userId.value!!)
             //RESTOperations.Operations.registerBooking(booking)
             //database.myDao().insertBooking(booking)
                 newBooking.postValue(booking)

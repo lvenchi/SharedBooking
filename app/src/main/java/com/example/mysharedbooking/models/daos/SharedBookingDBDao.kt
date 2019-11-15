@@ -35,6 +35,9 @@ interface SharedBookingDBDao {
     fun insertBookings(vararg serviceBook: Booking)
 
     @Delete
+    fun deleteBooking(booking: Booking)
+
+    @Delete
     fun deleteUser(user: User)
 
 

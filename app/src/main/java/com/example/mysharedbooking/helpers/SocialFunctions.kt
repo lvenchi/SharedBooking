@@ -1,11 +1,20 @@
 package com.example.mysharedbooking.helpers
 
+import android.app.Activity
+import android.content.ContentValues
 import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.Navigation
+import com.example.mysharedbooking.LoginFragmentDirections
 import com.example.mysharedbooking.MainActivity
+import com.example.mysharedbooking.R
 import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.MainViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -86,7 +95,42 @@ class SocialFunctions {
             }
         }
 
-        fun downloadUserProfilePic(userPicURL: URL, mainViewModel: MainViewModel){
+        fun handleGoogleSignInResult(signInResult: Task<GoogleSignInAccount>, activity: MainActivity,
+                                             mainViewModel: MainViewModel, googleSignInClient: GoogleSignInClient){
+
+            try {
+                val account = signInResult.getResult(ApiException::class.java)
+                (activity).googleSignInClient = googleSignInClient
+
+
+                mainViewModel.viewModelScope.launch(Dispatchers.IO) {
+                    MainActivity.getInMemoryDatabase(activity.baseContext).myDao().insertUsers(
+                        User(0,
+                            account?.givenName,
+                            account?.familyName,
+                            account?.displayName,
+                            account?.email,
+                            "",
+                            account?.photoUrl.toString(),
+                            account?.id
+                        )
+                    )
+                    mainViewModel.currentUser.postValue(MainActivity.getInMemoryDatabase(activity.baseContext).myDao().findUserByEmail(account?.email!!))
+                    downloadUserProfilePic(URL(account.photoUrl?.toString()), mainViewModel)
+                }.invokeOnCompletion {
+                    mainViewModel.logged.postValue(true)
+                    activity.runOnUiThread {
+                        val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()
+                        Navigation.findNavController(activity, R.id.nav_host_fragment).navigate(action)
+                    }
+                }
+
+            } catch (e: ApiException) {
+                Log.w(ContentValues.TAG, "signInResult:failed code=" + e.statusCode)
+            }
+        }
+
+        private fun downloadUserProfilePic(userPicURL: URL, mainViewModel: MainViewModel){
             var connection: HttpsURLConnection? = null
             var response: Int = 0
             try {

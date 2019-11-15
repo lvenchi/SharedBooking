@@ -11,7 +11,7 @@ import com.squareup.moshi.Json
         ForeignKey(entity = User::class,
         parentColumns = arrayOf("uid"),
         childColumns = arrayOf("userId")),
-        ForeignKey(entity = Booking::class,
+        ForeignKey(entity = Booking::class, onDelete = ForeignKey.CASCADE,
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("bookingId"))]
 )

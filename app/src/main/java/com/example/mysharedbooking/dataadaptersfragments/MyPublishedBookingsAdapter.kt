@@ -1,29 +1,29 @@
 package com.example.mysharedbooking.dataadaptersfragments
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
 import com.example.mysharedbooking.models.Booking
-import com.example.mysharedbooking.models.UserBooking
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.StringBuilder
-import java.text.SimpleDateFormat
 import java.util.*
 
+import java.text.SimpleDateFormat
 
-class BookableBookingAdapter(context: Context, private val mainViewModel: MainViewModel,
+
+class MyPublishedBookingsAdapter(context: Context, private val mainViewModel: MainViewModel,
                              private val itemClickListener: UserBookingViewHolder.ItemClickListener): RecyclerView.Adapter<UserBookingViewHolder>(){
-
 
     private var clientBookingList: List<Booking>? = null
     private val layoutInflater = LayoutInflater.from(context)
@@ -32,7 +32,9 @@ class BookableBookingAdapter(context: Context, private val mainViewModel: MainVi
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserBookingViewHolder {
         val inflatedViewHolder = layoutInflater
             .inflate(R.layout.bookable_book_viewholder, parent, false) as RelativeLayout
-
+        val button = inflatedViewHolder.findViewById<Button>(R.id.button_book)
+        button.text = "Delete"
+        button.setBackgroundColor(Color.RED)
         return UserBookingViewHolder(
             inflatedViewHolder
         )
@@ -51,9 +53,8 @@ class BookableBookingAdapter(context: Context, private val mainViewModel: MainVi
         if(clientBookingList != null) {
             val el = clientBookingList!![position]
             val stringBuilder = StringBuilder()
-
             stringBuilder.append(el.id.toString()).append("  " + el.ownerId)
-                .append(" " + formatter.format(el.date))
+                .append("  "+formatter.format(el.date))
 
             var url: String? = null
             mainViewModel.viewModelScope.launch (Dispatchers.IO){
