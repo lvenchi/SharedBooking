@@ -1,8 +1,9 @@
-package com.example.mysharedbooking
+package com.example.mysharedbooking.fragments
 
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,20 +15,24 @@ import androidx.lifecycle.*
 
 import androidx.navigation.Navigation.findNavController
 import androidx.viewpager.widget.ViewPager
+
+import com.example.mysharedbooking.MainActivity
+import com.example.mysharedbooking.R
 import com.example.mysharedbooking.databinding.FragmentHomeBinding
-import com.example.mysharedbooking.models.MySharedBookingDB
-import com.example.mysharedbooking.models.User
+import com.example.mysharedbooking.helpers.FirebaseUtils
 import com.example.mysharedbooking.tabfragments.AvailableBookingsFragment
 import com.example.mysharedbooking.tabfragments.MyBookedBookingsFragment
 import com.example.mysharedbooking.tabfragments.MyPublishedBookingsFragment
 import com.example.mysharedbooking.viewmodels.MainViewModel
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.iid.FirebaseInstanceId
 
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val PARAM1 = "param1"
+private const val PARAM2 = "param2"
 
 
 /**
@@ -44,18 +49,18 @@ class HomeFrag : Fragment() {
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
     lateinit var goToBookingForm: Observer<Boolean?>
-    lateinit var myDatabase: MySharedBookingDB
     lateinit var tabLayout: TabLayout
     lateinit var viewPager: ViewPager
-    lateinit var loadBookingObserver: Observer<User>
+    private lateinit var fireBaseUtils: FirebaseUtils
+
     private lateinit var mainViewModel: MainViewModel
-    private var demoCollectionPagerAdapter : DemoCollectionPagerAdapter? = null
+    private var bookingsCollectionPagerAdapter : BookingsCollectionPagerAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            param1 = it.getString(PARAM1)
+            param2 = it.getString(PARAM2)
         }
 
         mainViewModel = activity?.run {
@@ -64,37 +69,56 @@ class HomeFrag : Fragment() {
 
         goToBookingForm = Observer {
             if( it == true ) {
-                val action = HomeFragDirections.actionHomeFragToNewBookingForm(userId = mainViewModel.currentUser.value!!.uid)
-                findNavController(activity as MainActivity, R.id.nav_host_fragment).navigate(action)
+                val action =
+                    HomeFragDirections.actionHomeFragToNewBookingForm(
+                        userEmail = mainViewModel.currentUser.value!!.email
+                    )
+                findNavController(activity as MainActivity,
+                    R.id.nav_host_fragment
+                ).navigate(action)
                 mainViewModel.addNewBook.value = false
             }
         }
         mainViewModel.addNewBook.observe(this, goToBookingForm)
 
-        demoCollectionPagerAdapter = DemoCollectionPagerAdapter(childFragmentManager)
+        bookingsCollectionPagerAdapter =
+            BookingsCollectionPagerAdapter(
+                childFragmentManager
+            )
 
-        /*loadBookingObserver = Observer { user ->
-            if(user!= null) {*/
-                mainViewModel.initRepo(mainViewModel.currentUser.value!!.uid)
+        mainViewModel.initRepo(mainViewModel.currentUser.value!!.email)
+        fireBaseUtils = FirebaseUtils(mainViewModel)
 
-                demoCollectionPagerAdapter?.addFragment(AvailableBookingsFragment(), "Available")
-                demoCollectionPagerAdapter?.addFragment(MyPublishedBookingsFragment(), "Published")
-                demoCollectionPagerAdapter?.addFragment(MyBookedBookingsFragment(), "My Booked")
+        bookingsCollectionPagerAdapter?.addFragment(AvailableBookingsFragment(), "Available")
+        bookingsCollectionPagerAdapter?.addFragment(MyPublishedBookingsFragment(), "Published")
+        bookingsCollectionPagerAdapter?.addFragment(MyBookedBookingsFragment(), "My Booked")
 
-            /*}
-        }
-        mainViewModel.currentUser.observe(this, loadBookingObserver)*/
+        FirebaseInstanceId.getInstance().instanceId
+            .addOnCompleteListener(OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("", "getInstanceId failed", task.exception)
+                    return@OnCompleteListener
+                }
+
+                // Get new Instance ID token
+                val token = task.result?.token
+                fireBaseUtils.updateUserToken(token, mainViewModel.currentUser.value!!)
+            })
+
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
     }
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val fragmentHomeBinding: FragmentHomeBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
+        val fragmentHomeBinding: FragmentHomeBinding = DataBindingUtil.inflate(inflater,
+            R.layout.fragment_home, container, false)
         fragmentHomeBinding.viewmodel = mainViewModel
 
         (activity as MainActivity).supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
@@ -106,7 +130,7 @@ class HomeFrag : Fragment() {
 
         tabLayout = view.findViewById(R.id.tab_layout)
         viewPager = view.findViewById(R.id.pager)
-        viewPager.adapter = demoCollectionPagerAdapter
+        viewPager.adapter = bookingsCollectionPagerAdapter
         viewPager.offscreenPageLimit = 2
         tabLayout.setupWithViewPager(viewPager)
 
@@ -114,7 +138,17 @@ class HomeFrag : Fragment() {
 
 
     override fun onStart() {
+        fireBaseUtils.listenBookingsUpdates()
+        fireBaseUtils.listenUserBookingsUpdates()
+        fireBaseUtils.listenUsersUpdates()
         super.onStart()
+    }
+
+    override fun onStop() {
+        fireBaseUtils.unListenBookingUpdates()
+        fireBaseUtils.unListenUserBookingUpdates()
+        fireBaseUtils.unListenUsersUpdates()
+        super.onStop()
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -126,8 +160,6 @@ class HomeFrag : Fragment() {
         super.onAttach(context)
         if (context is OnFragmentInteractionListener) {
             listener = context
-            myDatabase = MainActivity.getInMemoryDatabase(activity!!.applicationContext)
-
         } else {
            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
         }
@@ -168,15 +200,15 @@ class HomeFrag : Fragment() {
         fun newInstance(param1: String, param2: String) =
             HomeFrag().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putString(PARAM1, param1)
+                    putString(PARAM2, param2)
                 }
             }
     }
 
 
 
-    class DemoCollectionPagerAdapter(fragmentManager: FragmentManager) :
+    class BookingsCollectionPagerAdapter(fragmentManager: FragmentManager) :
         FragmentPagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
         private var frList: ArrayList<Fragment> = ArrayList()

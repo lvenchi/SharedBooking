@@ -1,4 +1,4 @@
-package com.example.mysharedbooking.dataadaptersfragments
+package com.example.mysharedbooking.fragments
 
 import android.app.Dialog
 import android.app.TimePickerDialog

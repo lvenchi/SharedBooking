@@ -1,4 +1,4 @@
-package com.example.mysharedbooking
+package com.example.mysharedbooking.fragments
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -15,14 +15,14 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
-import com.example.mysharedbooking.dataadaptersfragments.DatePickerFragment
-import com.example.mysharedbooking.dataadaptersfragments.TimePickerFragment
+import com.example.mysharedbooking.MainActivity
+import com.example.mysharedbooking.R
 import com.example.mysharedbooking.databinding.FragmentNewBookingFormBinding
 import com.example.mysharedbooking.models.Booking
+import com.example.mysharedbooking.viewmodels.MainViewModel
 import com.example.mysharedbooking.viewmodels.NewBookingViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
@@ -45,11 +45,11 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var nbfviewmodel: NewBookingViewModel
-    private var userId: Long? = 0
+    private var userEmail: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        userId = arguments?.getLong("userId")
+        userEmail = arguments?.getString("userEmail")
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -82,10 +82,11 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val fragmentNewBookingFormBinding: FragmentNewBookingFormBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_new_booking_form, container, false)
+        val fragmentNewBookingFormBinding: FragmentNewBookingFormBinding = DataBindingUtil.inflate(inflater,
+            R.layout.fragment_new_booking_form, container, false)
         fragmentNewBookingFormBinding.lifecycleOwner = this
         nbfviewmodel = ViewModelProviders.of(this).get(NewBookingViewModel::class.java)
-        nbfviewmodel.userId.postValue(userId)
+        nbfviewmodel.userEmail.postValue(userEmail)
         fragmentNewBookingFormBinding.viewmodel = nbfviewmodel
 
         nbfviewmodel.newBooking.observe(this, goHome)
@@ -99,23 +100,26 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
         listener?.onFragmentInteraction(uri)
     }
 
-    /*
-    * nbfviewmodel.viewModelScope.launch {
-            MainActivity.getInMemoryDatabase(activity!!.applicationContext).myDao().insertBooking(res)
-        }.invokeOnCompletion { activity?.onBackPressed()}*/
-
     val goHome = Observer<Booking>{
         nbfviewmodel.viewModelScope.launch(Dispatchers.IO) {
-            MainActivity.getInMemoryDatabase(activity!!.baseContext).myDao().insertBooking(it)
+            val newId : Long = MainActivity.getInMemoryDatabase(
+                activity!!.baseContext
+            ).myDao().insertBooking(it)
+            activity?.run {
+                ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java).insertBooking(
+                    it.copy(id = newId)
+                )
+            }!!
         }
         activity?.onBackPressed()
     }
 
     private val showDatePickerDialog = Observer<Int> {
-        val newFragment = DatePickerFragment(
-            activity as MainActivity,
-            this
-        )
+        val newFragment =
+            DatePickerFragment(
+                activity as MainActivity,
+                this
+            )
         newFragment.show(activity!!.supportFragmentManager, "datePicker")
     }
 

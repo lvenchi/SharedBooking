@@ -11,9 +11,6 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mysharedbooking.MainActivity
-import com.example.mysharedbooking.RESTOperations
-import com.example.mysharedbooking.models.MySharedBookingDB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -29,13 +26,12 @@ class NewBookingViewModel(application: Application) : AndroidViewModel(applicati
     val showDatePick: MutableLiveData<Int> = MutableLiveData()
     val type: MutableLiveData<String> = MutableLiveData("Choose Type")
     val date: MutableLiveData<String> = MutableLiveData( Date().toString())
-    val userId: MutableLiveData<Long> = MutableLiveData(0)
+    val userEmail: MutableLiveData<String> = MutableLiveData("")
     val calendar: MutableLiveData<Calendar> = MutableLiveData(Calendar.getInstance())
 
     fun insertNewBooking( view: View){
         viewModelScope.launch (Dispatchers.IO) {
-                val booking = Booking( 0, type.value.toString(), calendar.value!!.timeInMillis, false, userId.value!!)
-            //RESTOperations.Operations.registerBooking(booking)
+                val booking = Booking( Calendar.getInstance().timeInMillis, type.value.toString(), calendar.value!!.timeInMillis, false, userEmail.value!!)
             //database.myDao().insertBooking(booking)
                 newBooking.postValue(booking)
         }

@@ -6,9 +6,9 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.Navigation
-import com.example.mysharedbooking.LoginFragmentDirections
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
+import com.example.mysharedbooking.fragments.LoginFragmentDirections
 import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -31,9 +31,10 @@ class SocialFunctions {
     object SocialFunctionsHelpers{
 
         @JvmStatic
-        fun downloadFBUserInfo(userId: String?, viewModel: MainViewModel){
+        fun downloadFBUserInfo(userId: String?, activity: MainActivity, mainViewModel: MainViewModel,
+                               firebaseId: String, firebaseToken: String){
 
-            viewModel.viewModelScope.launch(Dispatchers.IO) {
+            mainViewModel.viewModelScope.launch(Dispatchers.IO) {
                 var connection: HttpsURLConnection? = null
                 var response: Int = 0
 
@@ -42,7 +43,7 @@ class SocialFunctions {
                     connection = (URL(
                         "https://graph.facebook.com/"+
                             userId+"?fields=id,picture,name,first_name,last_name,email&access_token="+
-                                viewModel.fbAccessToken.value?.token)
+                                mainViewModel.fbAccessToken.value?.token)
                         .openConnection() as? HttpsURLConnection)
                     connection?.run {
                         readTimeout = 3000
@@ -63,24 +64,30 @@ class SocialFunctions {
                                     .getJSONObject("picture")
                                     ?.getJSONObject("data")
                                     ?.get("url") as String
-                                viewModel.myDatabase.myDao().insertUsers(
-                                    User(0,
-                                        username = serverResponse.getString("name"),
-                                        firstName = serverResponse.getString("first_name"),
-                                        lastName = serverResponse.getString("last_name"),
-                                        email = serverResponse.getString("email"),
-                                        role = "",
-                                        profilePic = profileURL,
-                                        providerId = serverResponse.getString("id") )
-                                )
-                                viewModel.currentUser.postValue(viewModel.myDatabase.myDao().findUserByEmail( serverResponse.getString("email")))
+
+                                val insertedUser = User(
+                                    email = serverResponse.getString("email"),
+                                    username = serverResponse.getString("name"),
+                                    firstName = serverResponse.getString("first_name"),
+                                    lastName = serverResponse.getString("last_name"),
+                                    role = "",
+                                    profilePic = profileURL,
+                                    firebaseId = firebaseId,
+                                    firebaseToken = firebaseToken)
+                                if(MainActivity.getInMemoryDatabase(activity.baseContext).myDao()
+                                        .findUserByEmail( serverResponse.getString("email")) == null) {
+                                    MainActivity.getInMemoryDatabase(activity.baseContext).myDao()
+                                        .insertUsers(insertedUser)
+                                    mainViewModel.insertUser(insertedUser)
+                                }
+                                mainViewModel.currentUser.postValue(insertedUser)
                                 downloadUserProfilePic(
                                     URL(
                                         serverResponse
                                             .getJSONObject("picture")
                                             ?.getJSONObject("data")
                                             ?.get("url") as String
-                                    ), viewModel
+                                    ), mainViewModel
                                 )
                             }
                         }
@@ -92,30 +99,39 @@ class SocialFunctions {
                     //connection?.inputStream?.close()
                     connection?.disconnect()
                 }
+            }.invokeOnCompletion {
+                mainViewModel.logged.postValue(true)
+                activity.runOnUiThread {
+                    val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()
+                    Navigation.findNavController(activity, R.id.nav_host_fragment).navigate(action)
+                }
             }
         }
 
-        fun handleGoogleSignInResult(signInResult: Task<GoogleSignInAccount>, activity: MainActivity,
-                                             mainViewModel: MainViewModel, googleSignInClient: GoogleSignInClient){
+        fun handleGoogleSignInResult(account :GoogleSignInAccount, activity: MainActivity,
+                                             mainViewModel: MainViewModel, googleSignInClient: GoogleSignInClient,
+                                     firebaseId: String, firebaseToken: String){
 
             try {
-                val account = signInResult.getResult(ApiException::class.java)
                 (activity).googleSignInClient = googleSignInClient
 
-
                 mainViewModel.viewModelScope.launch(Dispatchers.IO) {
-                    MainActivity.getInMemoryDatabase(activity.baseContext).myDao().insertUsers(
-                        User(0,
-                            account?.givenName,
-                            account?.familyName,
-                            account?.displayName,
-                            account?.email,
-                            "",
-                            account?.photoUrl.toString(),
-                            account?.id
-                        )
-                    )
-                    mainViewModel.currentUser.postValue(MainActivity.getInMemoryDatabase(activity.baseContext).myDao().findUserByEmail(account?.email!!))
+                    var newUser = MainActivity.getInMemoryDatabase(activity.baseContext).myDao().findUserByEmail(account.email!!)
+                    if( newUser == null) {
+                        newUser = User(
+                            email = account.email!!,
+                            firstName = account.givenName,
+                            lastName = account.familyName,
+                            username = account.displayName,
+                            role = "",
+                            profilePic = account.photoUrl.toString(),
+                            firebaseId = firebaseId,
+                            firebaseToken = firebaseToken
+                            )
+                        MainActivity.getInMemoryDatabase(activity.baseContext).myDao().insertUsers(newUser)
+                        mainViewModel.insertUser(newUser)
+                    }
+                    mainViewModel.currentUser.postValue(newUser)
                     downloadUserProfilePic(URL(account.photoUrl?.toString()), mainViewModel)
                 }.invokeOnCompletion {
                     mainViewModel.logged.postValue(true)

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFrag"
-        android:name="com.example.mysharedbooking.HomeFrag"
+        android:name="com.example.mysharedbooking.fragments.HomeFrag"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -16,41 +16,23 @@
         <action
             android:id="@+id/action_homeFrag_to_newBookingForm"
             app:destination="@id/newBookingForm" />
-        <action
-            android:id="@+id/action_homeFrag_to_bookingListFragment"
-            app:destination="@id/bookingListFragment" />
-        <action
-            android:id="@+id/action_homeFrag_to_bookExistingBookingFragment"
-            app:destination="@id/bookExistingBookingFragment" />
     </fragment>
     <fragment
         android:id="@+id/userListFragment"
-        android:name="com.example.mysharedbooking.dataadaptersfragments.UserListFragment"
+        android:name="com.example.mysharedbooking.fragments.UserListFragment"
         android:label="fragment_user_list"
         tools:layout="@layout/fragment_user_list" />
     <fragment
         android:id="@+id/newBookingForm"
-        android:name="com.example.mysharedbooking.NewBookingForm"
-        android:label="fragment_new_booking_form"
-        tools:layout="@layout/fragment_new_booking_form" >
+        android:name="com.example.mysharedbooking.fragments.NewBookingForm"
+        android:label="fragment_new_booking_form">
         <argument
-            android:name="userId"
-            app:argType="long"
-            android:defaultValue="0L" />
+            android:name="userEmail"
+            app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/bookingListFragment"
-        android:name="com.example.mysharedbooking.dataadaptersfragments.BookingListFragment"
-        android:label="fragment_booking_list"
-        tools:layout="@layout/fragment_booking_list" />
-    <fragment
-        android:id="@+id/bookExistingBookingFragment"
-        android:name="com.example.mysharedbooking.BookExistingBookingFragment"
-        android:label="fragment_book_existing_booking"
-        tools:layout="@layout/fragment_book_existing_booking" />
-    <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.mysharedbooking.LoginFragment"
+        android:name="com.example.mysharedbooking.fragments.LoginFragment"
         tools:layout="@layout/fragment_login" >
         <action
             android:id="@+id/action_loginFragment_to_homeFrag"

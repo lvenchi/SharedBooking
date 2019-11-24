@@ -6,16 +6,16 @@ import com.squareup.moshi.Json
 
 
 @Entity(tableName = "userclient_booking_join",
-    primaryKeys = ["userId", "bookingId"],
+    primaryKeys = ["userEmail", "bookingId"],
     foreignKeys = [
         ForeignKey(entity = User::class,
-        parentColumns = arrayOf("uid"),
-        childColumns = arrayOf("userId")),
+        parentColumns = arrayOf("email"),
+        childColumns = arrayOf("userEmail")),
         ForeignKey(entity = Booking::class, onDelete = ForeignKey.CASCADE,
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("bookingId"))]
 )
 data class UserBooking (
-    @Json(name = "UserId") val userId: Long,
+    @Json(name = "UserEmail") val userEmail: String,
     @Json(name = "BookingId") val bookingId: Long
 )

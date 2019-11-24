@@ -2,9 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single" android:id="@+id/pollo">
         <item android:title="@string/users" android:id="@+id/users" android:icon="@mipmap/ic_launcher"/>
-        <item android:title="@string/new_booking" android:id="@+id/new_booking" android:icon="@mipmap/ic_launcher_round"/>
-        <item android:title="@string/list_booking" android:id="@+id/list_booking" android:icon="@mipmap/ic_launcher"/>
-        <item android:title="@string/manage_links" android:id="@+id/manage_links" android:icon="@mipmap/ic_launcher_round"/>
     </group>
     <group android:checkableBehavior="single">
         <item android:title="@string/logout" android:id="@+id/logout" android:icon="@color/colorAccent"/>

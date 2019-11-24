@@ -5,7 +5,7 @@ import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.mysharedbooking.RESTOperations
+import com.example.mysharedbooking.helpers.RESTOperations
 import com.example.mysharedbooking.models.Booking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

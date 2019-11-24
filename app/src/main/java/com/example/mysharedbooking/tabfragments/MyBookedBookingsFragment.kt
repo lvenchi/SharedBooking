@@ -12,9 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
-import com.example.mysharedbooking.dataadaptersfragments.BookableBookingAdapter
-import com.example.mysharedbooking.dataadaptersfragments.MyBookedBookingAdapter
-import com.example.mysharedbooking.dataadaptersfragments.UserBookingViewHolder
+import com.example.mysharedbooking.dataadapters.MyBookedBookingAdapter
+import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
 import com.example.mysharedbooking.databinding.MyBookedBookingsFragmentBinding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.UserBooking
@@ -57,6 +56,6 @@ class MyBookedBookingsFragment :Fragment() , UserBookingViewHolder.ItemClickList
     }
 
     override fun onItemClicked(booking: Booking) {
-        mainViewModel.removeUserBooking( UserBooking( mainViewModel.currentUser.value!!.uid, booking.id))
+        mainViewModel.removeUserBooking( UserBooking( mainViewModel.currentUser.value!!.email, booking.id))
     }
 }

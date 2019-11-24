@@ -12,9 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
-import com.example.mysharedbooking.dataadaptersfragments.BookableBookingAdapter
-import com.example.mysharedbooking.dataadaptersfragments.MyPublishedBookingsAdapter
-import com.example.mysharedbooking.dataadaptersfragments.UserBookingViewHolder
+import com.example.mysharedbooking.dataadapters.MyPublishedBookingsAdapter
+import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
 import com.example.mysharedbooking.databinding.MyPublishedBookingFragmentBinding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.viewmodels.MainViewModel

@@ -9,10 +9,11 @@
             type="com.example.mysharedbooking.viewmodels.NewBookingViewModel" />
     </data>
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/relativeLayout2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".NewBookingForm">
+        tools:context=".fragments.NewBookingForm">
 
 
         <TextView
@@ -20,46 +21,52 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="top"
+            android:text="@string/type"
             android:textSize="25sp"
-            android:layout_below="@id/top"
-            android:text="@string/type"/>
+
+            app:layout_constraintBottom_toTopOf="@+id/dateButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <EditText
-            android:layout_width="match_parent"
+            android:id="@+id/editText"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/top"
-            android:text="@={viewmodel.type}"/>
+            android:inputType="text"
+            android:text="@={viewmodel.type}"
+            app:layout_constraintBottom_toTopOf="@+id/dateButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/top"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/dateButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/top"
+            android:layout_marginBottom="528dp"
             android:onClick="@{viewmodel::ShowPick}"
-            android:text="@string/set_date" />
+            android:text="@string/set_date"
+            app:layout_constraintBottom_toTopOf="@+id/button2"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/booking_date"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent"
             android:textSize="24sp"
-            android:layout_below="@id/top"
-            app:text="@{viewmodel.date}"
-            android:layout_toEndOf="@id/dateButton" />
-
-        <EditText
-            android:id="@+id/user"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/booking_date"
-            android:inputType="numberDecimal"
-            android:text="@={viewmodel.longToString(viewmodel.userId)}" />
+            app:layout_constraintBottom_toBottomOf="@+id/dateButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/dateButton"
+            app:text="@{viewmodel.date}" />
 
         <Button
+            android:id="@+id/button2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_alignParentBottom="true"
             android:onClick="@{viewmodel::insertNewBooking}"
-            android:text="@string/book"/>
-    </RelativeLayout>
+            android:text="@string/publish_book"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

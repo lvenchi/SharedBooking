@@ -1,9 +1,8 @@
-package com.example.mysharedbooking
+package com.example.mysharedbooking.helpers
 
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.RemoteUserBooking
 import com.example.mysharedbooking.models.User
-import com.example.mysharedbooking.models.UserBooking
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import java.net.HttpURLConnection
@@ -30,7 +29,7 @@ class RESTOperations {
                     requestMethod = "POST"
                     doInput = true
                     setRequestProperty("Content-Type","application/json")
-                    outputStream.write( adapter.toJson(User(0, newUser,"franco", newUser,"", "ruolone", "" , "")).toByteArray(Charsets.UTF_8) )
+                    outputStream.write( adapter.toJson(User("", newUser,"franco", newUser,"", "ruolone", "","" )).toByteArray(Charsets.UTF_8) )
                     connection.outputStream?.close()
                     // Open communications link (network traffic occurs here).
                     connect()

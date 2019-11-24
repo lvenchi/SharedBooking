@@ -17,5 +17,8 @@
     <string name="manage_links">Manage Links</string>
     <string name="logout">Logout</string>
     <string name="delete">Delete</string>
+    <string name="publish_book">Publish Book</string>
+    <string name="msg_token_fmt" />
+    <string name="book_channel_id">bookingchannelid</string>
 
 </resources>

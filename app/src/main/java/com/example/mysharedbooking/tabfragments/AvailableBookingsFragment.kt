@@ -12,14 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
-import com.example.mysharedbooking.dataadaptersfragments.BookableBookingAdapter
-import com.example.mysharedbooking.dataadaptersfragments.UserBookingViewHolder
+import com.example.mysharedbooking.dataadapters.BookableBookingAdapter
+import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
 import com.example.mysharedbooking.databinding.AvailableBookingsFragmentBinding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.UserBooking
 import com.example.mysharedbooking.viewmodels.MainViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 class AvailableBookingsFragment : Fragment(), UserBookingViewHolder.ItemClickListener {
 
@@ -35,7 +33,7 @@ class AvailableBookingsFragment : Fragment(), UserBookingViewHolder.ItemClickLis
     }
 
     override fun onItemClicked(booking: Booking) {
-        mainViewModel.insertMyBooking(UserBooking(mainViewModel.currentUser.value!!.uid, booking.id))
+        mainViewModel.insertMyBooking(UserBooking(mainViewModel.currentUser.value!!.email, booking.id))
     }
 
     override fun onCreateView(

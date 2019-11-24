@@ -1,4 +1,4 @@
-package com.example.mysharedbooking.dataadaptersfragments
+package com.example.mysharedbooking.dataadapters
 
 import android.content.Context
 import android.graphics.Color
@@ -17,22 +17,23 @@ import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.StringBuilder
-import java.text.SimpleDateFormat
 import java.util.*
 
-class MyBookedBookingAdapter(private val context: Context, private val mainViewModel: MainViewModel,
-                             private val itemClickListener: UserBookingViewHolder.ItemClickListener): RecyclerView.Adapter<UserBookingViewHolder>(){
+import java.text.SimpleDateFormat
 
+
+class MyPublishedBookingsAdapter(context: Context, private val mainViewModel: MainViewModel,
+                             private val itemClickListener: UserBookingViewHolder.ItemClickListener): RecyclerView.Adapter<UserBookingViewHolder>(){
 
     private var clientBookingList: List<Booking>? = null
     private val layoutInflater = LayoutInflater.from(context)
-    var formatter = SimpleDateFormat("dd-MMM-yyyy 'at' HH:mm:ss ", Locale.getDefault())
+    var formatter = SimpleDateFormat("dd-MMM-yyyy 'at' HH:mm:ss", Locale.ITALIAN)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserBookingViewHolder {
         val inflatedViewHolder = layoutInflater
-            .inflate(R.layout.bookable_book_viewholder, parent, false) as RelativeLayout
+            .inflate(R.layout.bookable_book_viewholder, parent, false) as ViewGroup
         val button = inflatedViewHolder.findViewById<Button>(R.id.button_book)
-        button.text = context.getString(R.string.delete)
+        button.text = "Delete"
         button.setBackgroundColor(Color.RED)
         return UserBookingViewHolder(
             inflatedViewHolder
@@ -52,13 +53,12 @@ class MyBookedBookingAdapter(private val context: Context, private val mainViewM
         if(clientBookingList != null) {
             val el = clientBookingList!![position]
             val stringBuilder = StringBuilder()
-
-            stringBuilder.append(el.id.toString()).append("  " + el.ownerId)
-                .append(" " + formatter.format(el.date))
+            stringBuilder.append(el.id.toString()).append("  " + el.ownerEmail)
+                .append("  "+formatter.format(el.date))
 
             var url: String? = null
             mainViewModel.viewModelScope.launch (Dispatchers.IO){
-                url = mainViewModel.getLinkProfilePicByUserId(el.ownerId)
+                url = mainViewModel.getLinkProfilePicByUserId(el.ownerEmail)
             }.invokeOnCompletion {
                 mainViewModel.viewModelScope.launch(Dispatchers.Main) {
                     if(!url.isNullOrEmpty()) Picasso.get().load(url).resize(100, 100)
@@ -69,9 +69,6 @@ class MyBookedBookingAdapter(private val context: Context, private val mainViewM
             holder.inflatedViewHolder.findViewById<TextView>(R.id.booking_title).text =
                 stringBuilder.toString()
             holder.bind(el, itemClickListener)
-            /*holder.inflatedViewHolder.findViewById<Button>(R.id.button_book).setOnClickListener {
-                mainViewModel.insertMyBooking(UserBooking(mainViewModel.currentUser.value!!.uid, el.id))
-            }*/
         }
     }
 }

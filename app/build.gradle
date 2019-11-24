@@ -52,4 +52,13 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
     implementation 'com.facebook.android:facebook-login:5.9.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.firebase:firebase-auth:19.2.0'
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx:21.3.0'
+    implementation 'com.google.firebase:firebase-database-ktx:19.2.0'
+    implementation 'com.android.support:support-annotations:28.0.0'
+    implementation 'com.google.firebase:firebase-messaging:20.0.1'
+    implementation "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
 }
+
+apply plugin: 'com.google.gms.google-services'
