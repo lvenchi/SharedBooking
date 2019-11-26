@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/homeFrag"
         android:name="com.example.mysharedbooking.fragments.HomeFrag"
-        android:label="fragment_home"
+        android:label="Home"
         tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_homeFrag_to_userListFragment"
@@ -16,16 +16,23 @@
         <action
             android:id="@+id/action_homeFrag_to_newBookingForm"
             app:destination="@id/newBookingForm" />
+        <action
+            android:id="@+id/action_homeFrag_to_loginFragment"
+            app:destination="@id/loginFragment" />
     </fragment>
     <fragment
         android:id="@+id/userListFragment"
         android:name="com.example.mysharedbooking.fragments.UserListFragment"
-        android:label="fragment_user_list"
-        tools:layout="@layout/fragment_user_list" />
+        android:label="Users"
+        tools:layout="@layout/fragment_user_list" >
+        <action
+            android:id="@+id/action_userListFragment_to_userDetailFragment"
+            app:destination="@id/userDetailFragment" />
+    </fragment>
     <fragment
         android:id="@+id/newBookingForm"
         android:name="com.example.mysharedbooking.fragments.NewBookingForm"
-        android:label="fragment_new_booking_form">
+        android:label="Fill the form">
         <argument
             android:name="userEmail"
             app:argType="string" />
@@ -37,5 +44,14 @@
         <action
             android:id="@+id/action_loginFragment_to_homeFrag"
             app:destination="@id/homeFrag" />
+    </fragment>
+    <fragment
+        android:id="@+id/userDetailFragment"
+        android:name="com.example.mysharedbooking.fragments.UserDetailFragment"
+        android:label="fragment_user_detail"
+        tools:layout="@layout/fragment_user_detail" >
+        <argument
+            android:name="userIndex"
+            app:argType="integer" />
     </fragment>
 </navigation>

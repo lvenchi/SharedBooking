@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single" android:id="@+id/pollo">
-        <item android:title="@string/users" android:id="@+id/users" android:icon="@mipmap/ic_launcher"/>
+        <item android:title="@string/users" android:id="@+id/users" android:icon="@mipmap/round_account_box_black_18dp"/>
     </group>
-    <group android:checkableBehavior="single">
-        <item android:title="@string/logout" android:id="@+id/logout" android:icon="@color/colorAccent"/>
+    <group android:menuCategory="secondary" android:checkableBehavior="single">
+        <item android:title="@string/logout" android:id="@+id/logout" android:icon="@mipmap/baseline_exit_to_app_black_18dp"/>
     </group>
 </menu>

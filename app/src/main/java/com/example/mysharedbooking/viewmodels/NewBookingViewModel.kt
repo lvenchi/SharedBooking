@@ -24,7 +24,7 @@ class NewBookingViewModel(application: Application) : AndroidViewModel(applicati
 
     val newBooking: MutableLiveData<Booking> = MutableLiveData()
     val showDatePick: MutableLiveData<Int> = MutableLiveData()
-    val type: MutableLiveData<String> = MutableLiveData("Choose Type")
+    val type: MutableLiveData<String> = MutableLiveData("")
     val date: MutableLiveData<String> = MutableLiveData( Date().toString())
     val userEmail: MutableLiveData<String> = MutableLiveData("")
     val calendar: MutableLiveData<Calendar> = MutableLiveData(Calendar.getInstance())

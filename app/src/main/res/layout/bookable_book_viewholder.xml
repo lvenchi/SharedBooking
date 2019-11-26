@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/bookable_user_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

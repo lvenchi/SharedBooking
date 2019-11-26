@@ -16,30 +16,28 @@
         tools:context=".fragments.NewBookingForm">
 
 
-        <TextView
-            android:id="@+id/top"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="top"
-            android:text="@string/type"
-            android:textSize="25sp"
-
-            app:layout_constraintBottom_toTopOf="@+id/dateButton"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <EditText
             android:id="@+id/editText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:text="@={viewmodel.type}"
+            android:layout_margin="8dp"
+            app:errorEnabled="true"
+            app:boxBackgroundColor="@color/design_default_color_secondary"
             app:layout_constraintBottom_toTopOf="@+id/dateButton"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/top"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" >
 
-        <Button
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:hint="@string/insert_type"
+                android:text="@={viewmodel.type}"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/dateButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,7 +57,7 @@
             app:layout_constraintStart_toEndOf="@+id/dateButton"
             app:text="@{viewmodel.date}" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

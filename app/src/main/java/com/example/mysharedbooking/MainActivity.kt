@@ -18,25 +18,21 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.NavigationUI.navigateUp
 import androidx.room.Room
-import com.example.mysharedbooking.fragments.UserListFragment
 import com.example.mysharedbooking.databinding.DrawerHeaderBinding
 import com.example.mysharedbooking.databinding.MainLayoutBinding
-import com.example.mysharedbooking.fragments.HomeFrag
-import com.example.mysharedbooking.fragments.HomeFragDirections
-import com.example.mysharedbooking.fragments.LoginFragment
-import com.example.mysharedbooking.fragments.NewBookingForm
+import com.example.mysharedbooking.fragments.*
 import com.example.mysharedbooking.models.MySharedBookingDB
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import com.facebook.CallbackManager
 import com.facebook.login.LoginManager
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
-
 import kotlinx.android.synthetic.main.main_layout.*
+
 
 class MainActivity : AppCompatActivity(),
     HomeFrag.OnFragmentInteractionListener, UserListFragment.OnFragmentInteractionListener,
-    NewBookingForm.OnFragmentInteractionListener, LoginFragment.OnFragmentInteractionListener{
+    NewBookingForm.OnFragmentInteractionListener, LoginFragment.OnFragmentInteractionListener, UserDetailFragment.OnFragmentInteractionListener{
 
     var googleSignInClient: GoogleSignInClient? = null
     lateinit var mainViewmodel: MainViewModel
@@ -44,7 +40,6 @@ class MainActivity : AppCompatActivity(),
     lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onFragmentInteraction(uri: Uri) {
-
     }
 
     companion object {
@@ -68,12 +63,12 @@ class MainActivity : AppCompatActivity(),
         mainViewmodel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         val binding: MainLayoutBinding = DataBindingUtil.setContentView(this, R.layout.main_layout)
         binding.viewmodel = mainViewmodel
-        setupNavigation(binding, mainViewmodel)
+        setupNavigation( binding )
         callbackManager = CallbackManager.Factory.create()
 
     }
 
-   override fun onSupportNavigateUp(): Boolean {
+    override fun onSupportNavigateUp(): Boolean {
        return navigateUp(findNavController(this, R.id.nav_host_fragment), appBarConfiguration)
     }
 
@@ -81,7 +76,10 @@ class MainActivity : AppCompatActivity(),
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            if(findNavController(this, R.id.nav_host_fragment).currentDestination?.id != R.id.homeFrag) super.onBackPressed()
+            else{
+                moveTaskToBack(true)
+            }
         }
     }
 
@@ -90,7 +88,7 @@ class MainActivity : AppCompatActivity(),
         return super.onCreateView(name, context, attrs)
     }
 
-    private fun setupNavigation(binding: MainLayoutBinding, mainViewModel: MainViewModel) {
+    private fun setupNavigation(binding: MainLayoutBinding) {
         val navController = findNavController(this, R.id.nav_host_fragment)
 
         appBarConfiguration = AppBarConfiguration.Builder(navController.graph).setDrawerLayout(drawerLayout).build()
@@ -109,7 +107,7 @@ class MainActivity : AppCompatActivity(),
                     FirebaseAuth.getInstance().signOut()
                     if( googleSignInClient != null ) googleLogout() else{ facebookLogout() }
                     mainViewmodel.resetLists(this)
-                    mainViewModel.currentUser.postValue(null)
+                    mainViewmodel.currentUser.postValue(null)
                 }
             }
             menuItem.isChecked = true
@@ -119,14 +117,16 @@ class MainActivity : AppCompatActivity(),
         val imageBinding: DrawerHeaderBinding = DrawerHeaderBinding.bind(binding.navigationView.getHeaderView(0))
         imageBinding.lifecycleOwner = this
         binding.navigationView.getHeaderView(0)
-        imageBinding.viewmodel = mainViewModel
+        imageBinding.viewmodel = mainViewmodel
     }
 
     fun googleLogout(){
         mainViewmodel.logged.value = false
         mainViewmodel.login.value = false
         googleSignInClient?.signOut()?.addOnCompleteListener {
-            findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
+            val action = HomeFragDirections.actionHomeFragToLoginFragment()
+            findNavController(this, R.id.nav_host_fragment).navigate(action)
+            //findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
             googleSignInClient = null
         }
     }
@@ -135,7 +135,9 @@ class MainActivity : AppCompatActivity(),
         mainViewmodel.logged.value = false
         mainViewmodel.login.value = false
         LoginManager.getInstance().logOut()
-        findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
+        val action = HomeFragDirections.actionHomeFragToLoginFragment()
+        findNavController(this, R.id.nav_host_fragment).navigate(action)
+        //findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
     }
 
     fun createChannel(){
@@ -152,12 +154,6 @@ class MainActivity : AppCompatActivity(),
 
             getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(notificationChannel)
-        } else {
-
         }
-
-
-
     }
-
 }

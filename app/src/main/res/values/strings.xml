@@ -20,5 +20,6 @@
     <string name="publish_book">Publish Book</string>
     <string name="msg_token_fmt" />
     <string name="book_channel_id">bookingchannelid</string>
+    <string name="insert_type">Insert Type</string>
 
 </resources>

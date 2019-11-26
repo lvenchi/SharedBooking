@@ -7,19 +7,26 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.widget.ImageViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
+import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
+import com.example.mysharedbooking.dataadapters.UserViewHolder
 import com.example.mysharedbooking.databinding.FragmentUserListBinding
 import com.example.mysharedbooking.models.MySharedBookingDB
 import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.UsersViewModel
+import com.squareup.picasso.Picasso
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -59,7 +66,7 @@ class UserListFragment : Fragment() {
         val downloadUsers = Observer<List<User>> { newList ->
             usersRecyclerView?.adapter =
                 UserAdapter(
-                    newList
+                    newList, activity!! as MainActivity, userViewModel
                 )
         }
         userViewModel.getUserList().observe(this, downloadUsers)
@@ -67,7 +74,7 @@ class UserListFragment : Fragment() {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(activity)
             UserAdapter(
-                userList
+                userList, activity!! as MainActivity, userViewModel
             )
         }
 
@@ -79,7 +86,7 @@ class UserListFragment : Fragment() {
     ): View? {
         val userListFragmentBinding: FragmentUserListBinding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_user_list, container, false)
-        userViewModel = ViewModelProviders.of(this).get(UsersViewModel::class.java)
+        userViewModel = activity!!.run {ViewModelProviders.of(this).get(UsersViewModel::class.java)}
         userListFragmentBinding.viewmodel = userViewModel
 
         return userListFragmentBinding.root
@@ -106,16 +113,15 @@ class UserListFragment : Fragment() {
         listener = null
     }
 
-    class UserAdapter(private val userList: List<User>): RecyclerView.Adapter<UserAdapter.UserViewHolder>(){
+    class UserAdapter(private val userList: List<User>, private val activity: MainActivity, val usersViewModel: UsersViewModel): RecyclerView.Adapter<UserViewHolder>(), UserViewHolder.ItemClickListener{
 
-        class UserViewHolder(val tv: TextView): RecyclerView.ViewHolder(tv)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-            val textView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.user_holder, parent, false) as TextView
+            val inflatedView = LayoutInflater.from(parent.context)
+                .inflate(R.layout.user_holder, parent, false) as ViewGroup
 
             return UserViewHolder(
-                textView
+                inflatedView
             )
         }
 
@@ -124,7 +130,17 @@ class UserListFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-            holder.tv.text = userList[position].username +"  "+ userList[position].email
+            holder.inflatedViewHolder.findViewById<TextView>( R.id.username ).text = userList[position].username
+            Picasso.get().load(userList[position].profilePic).resize(100, 100)
+                .into(holder.inflatedViewHolder.findViewById<ImageView>( R.id.user_image))
+            holder.bind(userList[position], this )
+        }
+
+        override fun onItemClicked(user: User) {
+            usersViewModel.currentUser = user
+            val navController = Navigation.findNavController(activity, R.id.nav_host_fragment)
+            val action = UserListFragmentDirections.actionUserListFragmentToUserDetailFragment(userList.indexOf(user))
+            navController.navigate(action)
         }
     }
 
