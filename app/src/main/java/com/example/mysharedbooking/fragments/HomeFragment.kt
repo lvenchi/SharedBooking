@@ -104,8 +104,6 @@ class HomeFrag : Fragment() {
                 val token = task.result?.token
                 fireBaseUtils.updateUserToken(token, mainViewModel.currentUser.value!!)
             })
-
-
     }
 
     override fun onDestroyView() {

@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
@@ -21,6 +22,8 @@ import com.example.mysharedbooking.databinding.FragmentNewBookingFormBinding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.viewmodels.MainViewModel
 import com.example.mysharedbooking.viewmodels.NewBookingViewModel
+import com.google.android.material.snackbar.Snackbar
+import com.google.common.io.Resources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -109,6 +112,8 @@ class NewBookingForm : Fragment(), DatePickerDialog.OnDateSetListener, TimePicke
                 ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java).insertBooking(
                     it.copy(id = newId)
                 )
+                Snackbar.make(this.findViewById<DrawerLayout>(R.id.drawerLayout), "Success", Snackbar.LENGTH_SHORT)
+                    .setBackgroundTint(resources.getColor(R.color.colorPrimary, theme)).show()
             }!!
         }
         activity?.onBackPressed()

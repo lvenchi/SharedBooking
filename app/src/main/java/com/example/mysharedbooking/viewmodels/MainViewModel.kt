@@ -50,6 +50,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
     var myBookedBookingList : LiveData<List<Booking>> = MutableLiveData()
 
     var profileImage: MutableLiveData<WeakReference<Drawable>> = MutableLiveData()
+    val loading: MutableLiveData<Int> = MutableLiveData(View.INVISIBLE)
 
 
     fun initRepo(userEmail : String){
@@ -77,8 +78,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application){
     }
 
     fun insertUserBookings( userList: ArrayList<UserBooking>){
-        val currentUserBooking = ArrayList<UserBooking>()
-
         sharedBookingRepository.insertUserBookings(userList, viewModelScope)
     }
 

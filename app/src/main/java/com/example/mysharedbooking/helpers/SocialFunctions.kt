@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ContentValues
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.Navigation
 import com.example.mysharedbooking.MainActivity
@@ -101,6 +102,7 @@ class SocialFunctions {
                 }
             }.invokeOnCompletion {
                 mainViewModel.logged.postValue(true)
+                mainViewModel.loading.postValue(View.INVISIBLE)
                 activity.runOnUiThread {
                     val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()
                     Navigation.findNavController(activity, R.id.nav_host_fragment).navigate(action)
@@ -134,6 +136,7 @@ class SocialFunctions {
                     mainViewModel.currentUser.postValue(newUser)
                     downloadUserProfilePic(URL(account.photoUrl?.toString()), mainViewModel)
                 }.invokeOnCompletion {
+                    mainViewModel.loading.postValue(View.INVISIBLE)
                     mainViewModel.logged.postValue(true)
                     activity.runOnUiThread {
                         val action = LoginFragmentDirections.actionLoginFragmentToHomeFrag()

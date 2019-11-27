@@ -60,6 +60,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:20.0.1'
     implementation "androidx.constraintlayout:constraintlayout:2.0.0-beta3"
     implementation 'de.hdodenhof:circleimageview:3.0.1'
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.17'
 }
 
 apply plugin: 'com.google.gms.google-services'

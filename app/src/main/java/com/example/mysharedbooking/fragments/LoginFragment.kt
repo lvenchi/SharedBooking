@@ -27,6 +27,7 @@ import com.facebook.AccessToken
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.SignInButton
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -86,13 +87,14 @@ class LoginFragment : Fragment() {
         val accessToken = AccessToken.getCurrentAccessToken()
         val isLoggedIn = accessToken != null && !accessToken.isExpired
         if( isLoggedIn ) {
+            mainViewModel.loading.postValue(View.VISIBLE)
             mainViewModel.fbAccessToken.value = accessToken
             firebaseAuthWithFacebookAccessToken(accessToken)
         }
 
         account = GoogleSignIn.getLastSignedInAccount(activity)
         if(account != null){
-            //SocialFunctions.SocialFunctionsHelpers.handleGoogleSignInResult(account, activity as MainActivity, mainViewModel, googleSignInClient)
+            mainViewModel.loading.postValue(View.VISIBLE)
             firebaseAuthWithGoogle(account!!)
         }
 
@@ -106,33 +108,38 @@ class LoginFragment : Fragment() {
         val fragmentLoginBinding: FragmentLoginBinding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_login, container, false)
         //activity's ViewModel shared with some fragments
-
         fragmentLoginBinding.viewmodel = mainViewModel
 
         val facebookLoginButton: LoginButton = fragmentLoginBinding.root.findViewById(R.id.facebook_button)
         facebookLoginButton.setPermissions("email")
         facebookLoginButton.fragment = this
-        facebookLoginButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-            override fun onCancel() {
+        facebookLoginButton.setOnClickListener { View.OnClickListener { mainViewModel.loading.postValue(View.VISIBLE) } }
+        facebookLoginButton.registerCallback(
+            callbackManager, object : FacebookCallback<LoginResult> {
+                override fun onCancel() {
 
+                }
+
+                override fun onError(error: FacebookException?) {
+                    Toast.makeText(activity, "Error Logging with Facebook", Toast.LENGTH_LONG).show()
+                }
+
+                override fun onSuccess(result: LoginResult?) {
+                    mainViewModel.fbAccessToken.value = result?.accessToken
+                    if( result?.accessToken != null ) firebaseAuthWithFacebookAccessToken(result.accessToken)
+                }
             }
+        )
 
-            override fun onError(error: FacebookException?) {
-                Toast.makeText(activity, "Error Logging with Facebook", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onSuccess(result: LoginResult?) {
-                mainViewModel.fbAccessToken.value = result?.accessToken
-                if( result?.accessToken != null ) firebaseAuthWithFacebookAccessToken(result.accessToken)
-                //SocialFunctions.SocialFunctionsHelpers.downloadFBUserInfo(result?.accessToken!!.userId, activity as MainActivity ,mainViewModel)
-            }
-        })
-
-        val signInButton :SignInButton = fragmentLoginBinding.root.findViewById(R.id.login_google);
+        val signInButton :SignInButton = fragmentLoginBinding.root.findViewById(R.id.login_google)
+        fragmentLoginBinding.lifecycleOwner = this
         signInButton.setSize(SignInButton.SIZE_WIDE)
-        signInButton.setOnClickListener { signIn(googleSignInClient) }
-
+        signInButton.setOnClickListener {
+            mainViewModel.loading.postValue(View.VISIBLE)
+            signIn(googleSignInClient)
+        }
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
+
         return fragmentLoginBinding.root
     }
 
@@ -146,11 +153,11 @@ class LoginFragment : Fragment() {
 
         if(requestCode == 2 && resultCode == Activity.RESULT_OK){
             val googleSignInAccount = GoogleSignIn.getSignedInAccountFromIntent(data).result
-            //SocialFunctions.SocialFunctionsHelpers.handleGoogleSignInResult(googleSignInAccount, activity!! as MainActivity, mainViewModel, googleSignInClient)
-                if(googleSignInAccount != null) {
-                    account = googleSignInAccount
-                    firebaseAuthWithGoogle(googleSignInAccount)
-                }
+
+            if(googleSignInAccount != null) {
+                account = googleSignInAccount
+                firebaseAuthWithGoogle(googleSignInAccount)
+            }
         } else {
             if( requestCode == 64206 && resultCode == FacebookActivity.RESULT_OK) {
                 callbackManager.onActivityResult(requestCode, resultCode, data)
@@ -180,9 +187,9 @@ class LoginFragment : Fragment() {
                         task.result?.user!!.uid,
                         task1.result?.token!!)
                     }
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        Log.w("", "signInWithCredential:failure", task.exception)
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w("", "signInWithCredential:failure", task.exception)
                 }
             }
     }
@@ -204,7 +211,8 @@ class LoginFragment : Fragment() {
                         )
                     }
                 } else {
-                    //Snackbar.make(main_layout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
+                    mainViewModel.loading.postValue(View.INVISIBLE)
+                    Snackbar.make(activity?.findViewById(R.id.drawerLayout)!!, "Authentication Failed.", Snackbar.LENGTH_SHORT).show()
                 }
             }
     }

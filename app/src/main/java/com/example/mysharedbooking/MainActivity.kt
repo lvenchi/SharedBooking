@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
@@ -65,7 +66,6 @@ class MainActivity : AppCompatActivity(),
         binding.viewmodel = mainViewmodel
         setupNavigation( binding )
         callbackManager = CallbackManager.Factory.create()
-
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -76,8 +76,9 @@ class MainActivity : AppCompatActivity(),
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            if(findNavController(this, R.id.nav_host_fragment).currentDestination?.id != R.id.homeFrag) super.onBackPressed()
-            else{
+            val currFrag: Int? = findNavController(this, R.id.nav_host_fragment).currentDestination?.id
+            if( currFrag != R.id.homeFrag && currFrag != R.id.loginFragment ) super.onBackPressed()
+            else {
                 moveTaskToBack(true)
             }
         }
@@ -93,9 +94,7 @@ class MainActivity : AppCompatActivity(),
 
         appBarConfiguration = AppBarConfiguration.Builder(navController.graph).setDrawerLayout(drawerLayout).build()
         appBarConfiguration.topLevelDestinations.addAll(setOf(R.id.homeFrag, R.id.loginFragment, R.id.nav_host_fragment))
-        NavigationUI.setupActionBarWithNavController(this,
-                                             navController,
-                                             appBarConfiguration)
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
 
         // Handle nav drawer item clicks
         navigationView.setNavigationItemSelectedListener { menuItem ->
@@ -110,13 +109,14 @@ class MainActivity : AppCompatActivity(),
                     mainViewmodel.currentUser.postValue(null)
                 }
             }
-            menuItem.isChecked = true
+
+            menuItem.isChecked = false
             drawerLayout.closeDrawers()
             true
         }
+
         val imageBinding: DrawerHeaderBinding = DrawerHeaderBinding.bind(binding.navigationView.getHeaderView(0))
         imageBinding.lifecycleOwner = this
-        binding.navigationView.getHeaderView(0)
         imageBinding.viewmodel = mainViewmodel
     }
 
@@ -126,7 +126,6 @@ class MainActivity : AppCompatActivity(),
         googleSignInClient?.signOut()?.addOnCompleteListener {
             val action = HomeFragDirections.actionHomeFragToLoginFragment()
             findNavController(this, R.id.nav_host_fragment).navigate(action)
-            //findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
             googleSignInClient = null
         }
     }
@@ -137,7 +136,6 @@ class MainActivity : AppCompatActivity(),
         LoginManager.getInstance().logOut()
         val action = HomeFragDirections.actionHomeFragToLoginFragment()
         findNavController(this, R.id.nav_host_fragment).navigate(action)
-        //findNavController(this, R.id.nav_host_fragment).popBackStack(R.id.homeFrag, true)
     }
 
     fun createChannel(){
@@ -148,9 +146,9 @@ class MainActivity : AppCompatActivity(),
                 NotificationManager.IMPORTANCE_LOW
             )
             notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.RED
+            notificationChannel.lightColor = Color.GREEN
             notificationChannel.enableVibration(true)
-            notificationChannel.description = "Time for breakfast"
+            notificationChannel.description = "Booking Notification"
 
             getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(notificationChannel)

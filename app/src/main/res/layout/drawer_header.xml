@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:background="@color/colorPrimaryDark"
+        android:background="@color/colorPrimary"
         android:orientation="vertical">
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -31,6 +31,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textview.MaterialTextView
+            android:backgroundTint="@color/colorAccent"
             android:id="@+id/materialTextView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
