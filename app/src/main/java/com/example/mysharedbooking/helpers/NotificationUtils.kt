@@ -14,6 +14,7 @@ fun NotificationManager.sendNotification(context: Context, title: String, body: 
         .Builder( context, context.getString(R.string.book_channel_id))
         .setContentTitle(title)
         .setContentText(body)
+        .setStyle(NotificationCompat.BigTextStyle())
         .setSmallIcon(R.mipmap.dark_app_icon)
 
     notify(notificationId, notificationBuilder.build())

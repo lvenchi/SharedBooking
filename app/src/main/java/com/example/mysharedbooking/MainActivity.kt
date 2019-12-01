@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
@@ -94,14 +95,18 @@ class MainActivity : AppCompatActivity(),
 
         appBarConfiguration = AppBarConfiguration.Builder(navController.graph).setDrawerLayout(drawerLayout).build()
         appBarConfiguration.topLevelDestinations.addAll(setOf(R.id.homeFrag, R.id.loginFragment, R.id.nav_host_fragment))
+
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
+
+
 
         // Handle nav drawer item clicks
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when(menuItem.title){
                 getString(R.string.users) -> {
                     val action = HomeFragDirections.actionHomeFragToUserListFragment()
-                    navController.navigate(action)}
+                    navController.navigate(action)
+                }
                 getString(R.string.logout) -> {
                     FirebaseAuth.getInstance().signOut()
                     if( googleSignInClient != null ) googleLogout() else{ facebookLogout() }
@@ -140,15 +145,16 @@ class MainActivity : AppCompatActivity(),
 
     fun createChannel(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
+            val notificationChannel: NotificationChannel = NotificationChannel(
                 getString(R.string.book_channel_id),
                 getString(R.string.book_channel_id),
                 NotificationManager.IMPORTANCE_LOW
-            )
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.GREEN
-            notificationChannel.enableVibration(true)
-            notificationChannel.description = "Booking Notification"
+            ).also {
+                it.enableLights(true)
+                it.lightColor = Color.GREEN
+                it.enableVibration(true)
+                it.description = "Booking Notification"
+            }
 
             getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(notificationChannel)

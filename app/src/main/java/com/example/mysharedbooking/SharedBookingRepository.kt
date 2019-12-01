@@ -87,8 +87,6 @@ class SharedBookingRepository(application: Application, userEmail: String) {
     fun removeBookedBooking( userBooking: UserBooking, mainViewModelScope: CoroutineScope){
         mainViewModelScope.launch (Dispatchers.IO){
             userBookingDao.removeUserBooking(userBooking)
-
-
         }
     }
 

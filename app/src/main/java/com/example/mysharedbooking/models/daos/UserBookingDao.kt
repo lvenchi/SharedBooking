@@ -21,6 +21,14 @@ interface UserBookingDao {
     fun getBookingsOfUserClient(userEmail: String): LiveData<List<Booking>>
 
     @Query("""
+           SELECT * FROM booking
+           INNER JOIN userclient_booking_join
+           ON booking.id=userclient_booking_join.bookingId
+           WHERE userclient_booking_join.userEmail=:userEmail
+           """)
+    fun getDeadBookingsOfUserClient(userEmail: String): List<Booking>
+
+    @Query("""
            SELECT * FROM user
            INNER JOIN userclient_booking_join
            ON user.email=userclient_booking_join.userEmail

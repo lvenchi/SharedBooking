@@ -15,6 +15,7 @@ import com.example.mysharedbooking.R
 import com.example.mysharedbooking.dataadapters.MyPublishedBookingsAdapter
 import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
 import com.example.mysharedbooking.databinding.MyPublishedBookingFragmentBinding
+import com.example.mysharedbooking.helpers.setItemDecoratorWithPadding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.viewmodels.MainViewModel
 
@@ -47,14 +48,15 @@ class MyPublishedBookingsFragment : Fragment(), UserBookingViewHolder.ItemClickL
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         ownedBookingRecyclerView = view.findViewById(R.id.my_bookings_recycler_view)
-        ownedBookingRecyclerView?.adapter = MyPublishedBookingsAdapter(activity!!, mainViewModel, this)
-        ownedBookingRecyclerView?.layoutManager = LinearLayoutManager(activity)
-        ownedBookingRecyclerView?.setHasFixedSize(true)
-
+        if(ownedBookingRecyclerView?.adapter == null) ownedBookingRecyclerView?.also {
+            it.adapter = MyPublishedBookingsAdapter(activity!!, mainViewModel, this)
+            it.layoutManager = LinearLayoutManager(activity)
+            it.setHasFixedSize(true)
+            it.setItemDecoratorWithPadding(6)
+        }
         mainViewModel.getOwnedBookings().observe(this, Observer<List<Booking>> {
             (ownedBookingRecyclerView?.adapter as MyPublishedBookingsAdapter).setData(it)
         })
-
-        super.onViewCreated(view, savedInstanceState)
+            super.onViewCreated(view, savedInstanceState)
     }
 }

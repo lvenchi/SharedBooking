@@ -1,5 +1,9 @@
 package com.example.mysharedbooking.tabfragments
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,19 +16,24 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mysharedbooking.MainActivity
 import com.example.mysharedbooking.R
+import com.example.mysharedbooking.RememberMeBroadcastReceiver
 import com.example.mysharedbooking.dataadapters.MyBookedBookingAdapter
 import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
 import com.example.mysharedbooking.databinding.MyBookedBookingsFragmentBinding
+import com.example.mysharedbooking.helpers.setItemDecoratorWithPadding
 import com.example.mysharedbooking.models.Booking
 import com.example.mysharedbooking.models.UserBooking
 import com.example.mysharedbooking.viewmodels.MainViewModel
 
 class MyBookedBookingsFragment :Fragment() , UserBookingViewHolder.ItemClickListener{
 
+    private var alarmMgr: AlarmManager? = null
+    private lateinit var alarmIntent: PendingIntent
     var myBookedBookingsRecyclerView: RecyclerView? = null
     lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        alarmMgr = activity?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         super.onCreate(savedInstanceState)
     }
 
@@ -44,9 +53,12 @@ class MyBookedBookingsFragment :Fragment() , UserBookingViewHolder.ItemClickList
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         myBookedBookingsRecyclerView = view.findViewById(R.id.my_booked_bookings_recycler_view)
-        myBookedBookingsRecyclerView?.adapter = MyBookedBookingAdapter(activity!!, mainViewModel, this)
-        myBookedBookingsRecyclerView?.layoutManager = LinearLayoutManager(activity)
-        myBookedBookingsRecyclerView?.setHasFixedSize(true)
+        if(myBookedBookingsRecyclerView?.adapter == null) myBookedBookingsRecyclerView?.also {
+            it.adapter = MyBookedBookingAdapter(activity!!, mainViewModel, this)
+            it.layoutManager = LinearLayoutManager(activity)
+            it.setHasFixedSize(true)
+            it.setItemDecoratorWithPadding(6)
+        }
 
         mainViewModel.getMyBookedBookings().observe(this, Observer<List<Booking>> {
             (myBookedBookingsRecyclerView?.adapter as MyBookedBookingAdapter).setData(it)
@@ -55,7 +67,18 @@ class MyBookedBookingsFragment :Fragment() , UserBookingViewHolder.ItemClickList
         super.onViewCreated(view, savedInstanceState)
     }
 
+    //remove booking
     override fun onItemClicked(booking: Booking) {
         mainViewModel.removeUserBooking( UserBooking( mainViewModel.currentUser.value!!.email, booking.id))
+
+        alarmIntent = Intent(activity, RememberMeBroadcastReceiver::class.java).let { intent ->
+            intent.action = "com.example.MySharedBooking.REMEMBER_ME"
+            intent.putExtra("booking_type", booking.type)
+                .putExtra("owner_email", booking.ownerEmail)
+                .putExtra("appointment_date", booking.date)
+            PendingIntent.getBroadcast(context, 0, intent, 0)
+        }
+
+        alarmMgr?.cancel( alarmIntent )
     }
 }

@@ -23,6 +23,7 @@ import com.example.mysharedbooking.R
 import com.example.mysharedbooking.dataadapters.UserBookingViewHolder
 import com.example.mysharedbooking.dataadapters.UserViewHolder
 import com.example.mysharedbooking.databinding.FragmentUserListBinding
+import com.example.mysharedbooking.helpers.setItemDecoratorWithPadding
 import com.example.mysharedbooking.models.MySharedBookingDB
 import com.example.mysharedbooking.models.User
 import com.example.mysharedbooking.viewmodels.UsersViewModel
@@ -69,6 +70,7 @@ class UserListFragment : Fragment() {
                     newList, activity!! as MainActivity, userViewModel
                 )
         }
+
         userViewModel.getUserList().observe(this, downloadUsers)
         usersRecyclerView = activity?.findViewById<RecyclerView>(R.id.usersListView)?.apply {
             setHasFixedSize(true)
@@ -76,6 +78,8 @@ class UserListFragment : Fragment() {
             UserAdapter(
                 userList, activity!! as MainActivity, userViewModel
             )
+        }.also {
+            it?.setItemDecoratorWithPadding(10)
         }
 
     }
@@ -86,7 +90,9 @@ class UserListFragment : Fragment() {
     ): View? {
         val userListFragmentBinding: FragmentUserListBinding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_user_list, container, false)
-        userViewModel = activity!!.run {ViewModelProviders.of(this).get(UsersViewModel::class.java)}
+        userViewModel = activity!!.run {
+            ViewModelProviders.of(this).get(UsersViewModel::class.java)
+        }
         userListFragmentBinding.viewmodel = userViewModel
 
         return userListFragmentBinding.root
@@ -131,6 +137,7 @@ class UserListFragment : Fragment() {
 
         override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
             holder.inflatedViewHolder.findViewById<TextView>( R.id.username ).text = userList[position].username
+            holder.inflatedViewHolder.findViewById<TextView>( R.id.user_email).text = userList[position].email
             Picasso.get().load(userList[position].profilePic).resize(100, 100)
                 .into(holder.inflatedViewHolder.findViewById<ImageView>( R.id.user_image))
             holder.bind(userList[position], this )

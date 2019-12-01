@@ -101,8 +101,7 @@ class FirebaseUtils(val mainViewModel: MainViewModel) {
     }
 
     fun listenUserBookingsUpdates(){
-        userbookingUpdateListener = object :
-            ValueEventListener {
+        userbookingUpdateListener = object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
 
             }
@@ -119,7 +118,8 @@ class FirebaseUtils(val mainViewModel: MainViewModel) {
                                     bookingId = (newBooking["bookingId"])!! as Long,
                                     userEmail = newBooking["userEmail"] as String
                                 )
-                            )}
+                            )
+                        }
                     }
                 }
                 mainViewModel.insertUserBookings( bookingList )

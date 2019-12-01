@@ -57,6 +57,7 @@ class LoginFragment : Fragment() {
     private var account: GoogleSignInAccount? = null
     private lateinit var callbackManager: CallbackManager
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var facebookLoginButton: LoginButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,10 +69,12 @@ class LoginFragment : Fragment() {
         googleSignInClient = GoogleSignIn.getClient(activity as MainActivity, gso)
         firebaseAuth = FirebaseAuth.getInstance()
         callbackManager = CallbackManager.Factory.create()
+
         arguments?.let {
             param1 = it.getString(ARG_PARAM121)
             param2 = it.getString(ARG_PARAM2987)
         }
+
         mainViewModel = activity?.run {
             ViewModelProviders.of(activity as MainActivity).get(MainViewModel::class.java)
         }!!
@@ -81,7 +84,6 @@ class LoginFragment : Fragment() {
                 signIn(googleSignInClient)
             }
         }
-
         mainViewModel.login.observe(this, loginResult)
 
         val accessToken = AccessToken.getCurrentAccessToken()
@@ -94,7 +96,6 @@ class LoginFragment : Fragment() {
 
         account = GoogleSignIn.getLastSignedInAccount(activity)
         if(account != null){
-            mainViewModel.loading.postValue(View.VISIBLE)
             firebaseAuthWithGoogle(account!!)
         }
 
@@ -110,26 +111,28 @@ class LoginFragment : Fragment() {
         //activity's ViewModel shared with some fragments
         fragmentLoginBinding.viewmodel = mainViewModel
 
-        val facebookLoginButton: LoginButton = fragmentLoginBinding.root.findViewById(R.id.facebook_button)
-        facebookLoginButton.setPermissions("email")
-        facebookLoginButton.fragment = this
-        facebookLoginButton.setOnClickListener { View.OnClickListener { mainViewModel.loading.postValue(View.VISIBLE) } }
-        facebookLoginButton.registerCallback(
-            callbackManager, object : FacebookCallback<LoginResult> {
-                override fun onCancel() {
+        facebookLoginButton = fragmentLoginBinding.root.findViewById(R.id.facebook_button)
+        facebookLoginButton.also {
+            it.setPermissions("email")
+            it.fragment = this
+            it.setOnClickListener { View.OnClickListener { mainViewModel.loading.postValue(View.VISIBLE) } }
+            it.registerCallback(
+                callbackManager, object : FacebookCallback<LoginResult> {
+                    override fun onCancel() {
 
-                }
+                    }
 
-                override fun onError(error: FacebookException?) {
-                    Toast.makeText(activity, "Error Logging with Facebook", Toast.LENGTH_LONG).show()
-                }
+                    override fun onError(error: FacebookException?) {
+                        Toast.makeText(activity, "Error Logging with Facebook", Toast.LENGTH_LONG).show()
+                    }
 
-                override fun onSuccess(result: LoginResult?) {
-                    mainViewModel.fbAccessToken.value = result?.accessToken
-                    if( result?.accessToken != null ) firebaseAuthWithFacebookAccessToken(result.accessToken)
+                    override fun onSuccess(result: LoginResult?) {
+                        mainViewModel.fbAccessToken.value = result?.accessToken
+                        if( result?.accessToken != null ) firebaseAuthWithFacebookAccessToken(result.accessToken)
+                    }
                 }
-            }
-        )
+            )
+        }
 
         val signInButton :SignInButton = fragmentLoginBinding.root.findViewById(R.id.login_google)
         fragmentLoginBinding.lifecycleOwner = this
@@ -173,6 +176,7 @@ class LoginFragment : Fragment() {
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
 
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        mainViewModel.loading.postValue(View.VISIBLE)
         firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful ) {
@@ -194,7 +198,7 @@ class LoginFragment : Fragment() {
             }
     }
 
-    fun firebaseAuthWithFacebookAccessToken( token: AccessToken ) {
+    private fun firebaseAuthWithFacebookAccessToken(token: AccessToken ) {
 
         val credential = FacebookAuthProvider.getCredential(token.token)
         firebaseAuth.signInWithCredential(credential)
